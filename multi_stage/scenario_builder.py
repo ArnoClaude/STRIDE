@@ -63,6 +63,21 @@ class ScenarioBuilder:
                 raise ValueError("No scenario columns found in template")
             scenario_column = data_columns[0]
 
+        # Extract only the selected scenario column (drop all other scenario columns)
+        all_columns = scenario_df.columns.tolist()
+        data_columns = [col for col in all_columns if col not in ['block', 'key']]
+        columns_to_drop = [col for col in data_columns if col != scenario_column]
+        scenario_df = scenario_df.drop(columns=columns_to_drop)
+
+        print(f"  - Using scenario column: '{scenario_column}'")
+
+        # Print CO2 constraint if present
+        co2_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'co2_max')
+        if co2_mask.any():
+            co2_value = scenario_df.loc[co2_mask, scenario_column].values[0]
+            if pd.notna(co2_value) and co2_value != '' and co2_value != 'None':
+                print(f"  - CO2 limit: {co2_value} kg")
+
         # 1. Apply stage-linking constraints (if not first stage)
         if previous_stage_results is not None:
             scenario_df = self._apply_stage_linking(

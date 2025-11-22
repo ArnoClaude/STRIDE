@@ -122,6 +122,12 @@ class SequentialStageOptimizer:
                 # 5. Print summary
                 self._print_stage_summary(year, stage_result)
 
+                # 6. Stop if infeasible (can't continue to next stage)
+                if stage_result.get('status') == 'infeasible':
+                    print(f"\n❌ Multi-stage optimization STOPPED due to infeasible stage {year}")
+                    print(f"   Suggestion: Relax constraints (e.g., increase CO2 limit) or check scenario setup")
+                    return {'error': 'infeasible_stage', 'completed_stages': self.stage_results}
+
             except Exception as e:
                 print(f"\n❌ ERROR in stage {year}: {e}")
                 raise
@@ -231,24 +237,30 @@ class SequentialStageOptimizer:
         """Print summary of stage results."""
         print(f"\n3. Stage {year} Results:")
         print(f"  ├─ Status: {results.get('status', 'unknown')}")
+
+        # Handle infeasible scenarios
+        if results.get('status') == 'infeasible':
+            print(f"  └─ ⚠️  INFEASIBLE - No solution found (constraints too tight)")
+            return
+
         print(f"  ├─ NPV: ${results.get('npv', 0):,.0f}")
         print(f"  ├─ NPV (discounted): ${results.get('npv_discounted', 0):,.0f}")
         print(f"  ├─ CAPEX: ${results.get('capex_prj', 0):,.0f}")
         print(f"  ├─ OPEX: ${results.get('opex_prj', 0):,.0f}")
 
-        pv = results.get('pv_size_total', 0)
-        ess = results.get('ess_size_total', 0)
-        grid = results.get('grid_size_g2s', 0)
+        pv = results.get('pv_size_total', 0) or 0
+        ess = results.get('ess_size_total', 0) or 0
+        grid = results.get('grid_size_g2s', 0) or 0
 
         if pv:
             print(f"  ├─ PV total: {pv/1000:.1f} kW")
-            pv_new = results.get('pv_size_invest', 0)
+            pv_new = results.get('pv_size_invest', 0) or 0
             if pv_new:
                 print(f"  │  └─ New: {pv_new/1000:.1f} kW")
 
         if ess:
             print(f"  ├─ Battery total: {ess/1000:.1f} kWh")
-            ess_new = results.get('ess_size_invest', 0)
+            ess_new = results.get('ess_size_invest', 0) or 0
             if ess_new:
                 print(f"  │  └─ New: {ess_new/1000:.1f} kWh")
 
