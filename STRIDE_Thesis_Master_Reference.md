@@ -253,89 +253,79 @@ scenario,sim_duration,50            # Simulation period (days)
 
 ---
 
-## 6. Realistic Timeline
+## 6. Implementation Timeline & Progress
 
-### Phase 1: Foundation & Implementation
+### ✅ Completed (Weeks 1-4)
 
-**Basic Wrapper**
-- Test 2-3 stage optimization
-- **Deliverable:** Working sequential optimizer
+**REVOL-E-TION Integration & Understanding (2 weeks)**
+- ✅ REVOL-E-TION cloned as git submodule
+- ✅ Architecture exploration (blocks, strategies, temporal structure)
+- ✅ Test runs with example scenarios
+- ✅ Results interpretation methodology established
 
-**Parse Results & Data Pipeline**
-- Build robust results parser for REVOL-E-TION outputs
-- Implement capacity feeding between stages
-- Test full stage timeline
-- **Deliverable:** Complete data flow stage N → N+1
+**CO2 Emission Constraint Implementation (1.5 weeks)**
+- ✅ Extended `constraints.py` with `limit_co2_emissions()` method
+- ✅ Added `co2_spec_g2s` parameter to GridMarket in `blocks.py`
+- ✅ Validation notebook created: `01_test_co2_constraint.ipynb`
+- ✅ Discovered and fixed simulation vs project period mismatch
+- ✅ Verified constraint working correctly (7 scenarios tested)
 
-**Scenario Generation**
-- Build scenario builder for future projections
-- Implement parameter variations (costs, fleet growth)
-- Create 3 scenarios: baseline/optimistic/pessimistic
-- **Deliverable:** Multi-scenario capability
+**Notebook Infrastructure (0.5 weeks)**
+- ✅ Reorganized notebooks directory (each notebook in own subdirectory)
+- ✅ Created `notebooks/README.md` with usage documentation
+- ✅ Set up automated output management (plots, CSVs, JSON)
+- ✅ Repository README created with installation instructions
 
-**Case Study Design**
+---
+
+### 🚧 Current: Multi-Stage Sequential Optimizer (3 weeks)
+
+**Phase 1A: Basic 2-Stage Optimizer (2 weeks)**
+- 🔨 Implement `SequentialStageOptimizer` class
+- 🔨 Implement basic `ScenarioBuilder` with stage linking
+- 🔨 Implement basic `ResultsParser`
+- 🔨 Test 2-stage optimization (2025 → 2030)
+- **Deliverable:** Working 2-stage optimizer with capacity linking
+
+**Phase 1B: Full 6-Stage + Cost Curves (1 week)**
+- Extend to 6 stages (2025-2050)
+- Implement technology cost decline curves
+- Multi-stage NPV aggregation
+- Validation notebook: `02_test_sequential_optimizer.ipynb`
+- **Deliverable:** Complete 6-stage optimizer with declining costs
+
+---
+
+### 📅 Upcoming Phases
+
+**Case Studies & Data (3-4 weeks)**
 - Define 3 depot cases (small/medium/large)
-- Gather realistic input data
-- Run baseline optimizations
-- **Deliverable:** 3 realistic case studies
+- Gather realistic data (fleet profiles, tariffs, costs)
+- Run baseline scenarios
+- Generate scenario variations (optimistic/baseline/pessimistic)
+- **Deliverable:** Complete case study results
 
-### Phase 2: Analysis & Visualization
-
-**Core Visualizations**
-- Investment timeline plots (stacked bar charts)
+**Analysis & Visualization (3 weeks)**
+- Investment timeline plots
 - NPV waterfall charts
-- Sensitivity heatmaps
-- **Deliverable:** Publication-quality figures
+- Sensitivity analyses (5 key parameters)
+- Scenario comparisons
+- **Deliverable:** 15-20 publication-quality figures
 
-**Advanced Analysis**
-- Scenario comparison tools
-- Cost breakdown analysis
-- Operational metrics analysis
-- **Deliverable:** Interactive analysis notebooks
+**Thesis Writing (8-10 weeks, parallel with above)**
+- Methodology chapter (2 weeks)
+- Results chapter (3 weeks)
+- Introduction & literature (2 weeks)
+- Conclusions (1 week)
+- Assembly & revision (2 weeks)
+- **Deliverable:** Complete draft (~85-90 pages)
 
-### Phase 3: Writing
-
-**Methodology Chapter**
-- Mathematical formulation (LaTeX)
-- Algorithm descriptions
-- Implementation details
-- **Deliverable:** Chapter 3 (~12-15 pages)
-
-**Results Chapter**
-- Results for all case studies
-- Figure generation and polishing
-- Discussion and interpretation
-- **Deliverable:** Chapter 4 (~25-30 pages)
-
-**Introduction & Literature**
-- Introduction chapter
-- Finalize literature review
-- Related work positioning
-- **Deliverable:** Chapters 1-2 (~25 pages)
-
-**Conclusions**
-- Conclusions and future work
-- Abstract and summary
-- **Deliverable:** Chapter 5 (~5 pages)
-
-### Phase 4: Polish & Submission
-
-**Complete Draft**
-- Full document assembly
-- Internal consistency check
-- **Deliverable:** Complete draft for supervisor
-
-**Revision**
-- Incorporate Anna's feedback
-- Code cleanup and documentation
-- **Deliverable:** Revised thesis
-
-**Final Polish**
-- Proofreading
-- Final formatting
+**Final Revision & Submission (2-3 weeks)**
+- Incorporate supervisor feedback
+- Final polish and formatting
 - **Deliverable:** Submitted thesis
 
-**Expected completion: Mid-May 2025**
+**Expected completion: 13.04.2026**
 
 ---
 
@@ -343,13 +333,14 @@ scenario,sim_duration,50            # Simulation period (days)
 
 ### 7.1 Must-Have Milestones
 
-- **Week 7:** Working multi-stage optimizer with all stages included running
-- **Week 11:** All case studies defined and baseline runs complete
-- **Week 15:** All analysis and figures complete
-- **Week 20:** Complete draft to supervisor
-- **Week 26:** Final submission
+- **End of Phase 1A:** Working 2-stage optimizer (2025 → 2030)
+- **End of Phase 1B:** Complete 6-stage optimizer with cost curves
+- **End of Case Studies:** 3 complete depot scenarios analyzed
+- **End of Analysis:** All figures and sensitivity studies complete
+- **End of Writing:** Complete draft submitted to supervisor
+- **Final:** Thesis submitted (13.04.2026)
 
-### 7.3 Keys to Success
+### 7.2 Keys to Success
 
 1. **No scope creep** - Resist "just one more feature"
 2. **Weekly supervisor check-ins** - Catch issues early
@@ -701,10 +692,14 @@ git submodule update --remote revoletion
 ## Document Control
 
 **Created:** 01.11.2025
-**Last Updated:** 17.11.2025
-**Version:** 1.0
-**Contact:** Arno (TUM Master's Student)  
+**Last Updated:** 22.11.2025
+**Version:** 1.1
+**Contact:** Arno (TUM Master's Student)
 **Supervisor:** Anna Paper (Prof. Dr.-Ing. M. Lienkamp)
+
+**Changelog:**
+- v1.1 (22.11.2025): Updated timeline with completed work (CO2 constraint, notebook infrastructure), removed week-based counting
+- v1.0 (17.11.2025): Initial version
 
 ---
 

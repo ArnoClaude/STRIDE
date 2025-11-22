@@ -1,262 +1,287 @@
-# multi_stage/sequential_optimizer.py
+"""
+Sequential Multi-Stage Optimizer for STRIDE.
+
+Orchestrates multi-stage optimization by:
+1. Running REVOL-E-TION for each stage sequentially
+2. Passing investment decisions forward (stage linking)
+3. Aggregating multi-stage NPV
+
+Author: Arno Claude
+Thesis: STRIDE - Sequential Temporal Resource Investment for Depot Electrification
+"""
 
 import json
-import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import pandas as pd
+from .scenario_builder import ScenarioBuilder
+from .results_parser import ResultsParser
 
 
 class SequentialStageOptimizer:
     """
     Sequential multi-stage optimization wrapper for REVOL-E-TION.
-    Optimizes each stage independently, passing capacities forward.
+
+    Runs optimization for each stage independently, feeding investment
+    decisions forward as constraints for subsequent stages.
     """
 
     def __init__(
-            self,
-            stages: List[int] = [2025, 2030, 2035, 2040, 2045, 2050, 2055],
-            base_scenario_path: str = "case_studies/baseline/scenario_template.csv",
-            settings_path: str = "case_studies/baseline/settings.csv",
-            output_dir: str = "results/multi_stage"
+        self,
+        stages: List[int],
+        template_scenario_path: Path,
+        settings_path: Path,
+        revoletion_dir: Path,
+        output_dir: Path,
+        scenario_column: str = None,
+        discount_rate: float = 0.09
     ):
+        """
+        Parameters:
+        -----------
+        stages : list of int
+            Years to optimize (e.g., [2025, 2030, 2035, 2040, 2045, 2050])
+        template_scenario_path : Path
+            Base scenario CSV template
+        settings_path : Path
+            REVOL-E-TION settings CSV
+        revoletion_dir : Path
+            Directory containing REVOL-E-TION installation
+        output_dir : Path
+            Directory for saving results
+        scenario_column : str, optional
+            Which column from template to use (default: first scenario column)
+        discount_rate : float
+            WACC for NPV discounting (default: 0.09)
+        """
         self.stages = stages
-        self.base_scenario_path = Path(base_scenario_path)
-        self.settings_path = Path(settings_path)
-        self.output_dir = Path(output_dir)
+        self.template_scenario_path = template_scenario_path
+        self.settings_path = settings_path
+        self.revoletion_dir = revoletion_dir
+        self.output_dir = output_dir
+        self.scenario_column = scenario_column
+        self.discount_rate = discount_rate
+
+        # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Store results from each stage
-        self.results = {}
+        # Initialize helper classes
+        self.scenario_builder = ScenarioBuilder(template_scenario_path)
+        self.results_parser = ResultsParser()
+
+        # Storage for stage results
+        self.stage_results = {}
 
     def optimize(self) -> Dict:
         """
         Run sequential optimization across all stages.
 
         Returns:
-            Dictionary with results for each stage
+        --------
+        dict : Aggregated multi-stage results
         """
-        print(f"\n{'=' * 60}")
-        print(f"Starting Multi-Stage Sequential Optimization")
+        print(f"\n{'='*80}")
+        print(f"STRIDE Sequential Multi-Stage Optimization")
+        print(f"{'='*80}")
         print(f"Stages: {self.stages}")
-        print(f"{'=' * 60}\n")
+        print(f"Discount rate (WACC): {self.discount_rate:.1%}")
+        print(f"Output directory: {self.output_dir}")
+        print(f"{'='*80}\n")
 
+        # Run each stage sequentially
         for stage_idx, year in enumerate(self.stages):
-            print(f"\n{'=' * 60}")
+            print(f"\n{'='*80}")
             print(f"STAGE {stage_idx + 1}/{len(self.stages)}: Year {year}")
-            print(f"{'=' * 60}")
+            print(f"{'='*80}")
 
-            # 1. Generate stage-specific scenario
-            stage_scenario_path = self.generate_stage_scenario(
-                year=year,
-                stage_idx=stage_idx
-            )
+            try:
+                # 1. Build scenario for this stage
+                stage_scenario_path = self._generate_stage_scenario(
+                    year=year,
+                    stage_idx=stage_idx
+                )
 
-            # 2. Run REVOL-E-TION
-            stage_results = self.run_revoletion_stage(
-                scenario_path=stage_scenario_path,
-                year=year
-            )
+                # 2. Run REVOL-E-TION optimization
+                result_dir = self._run_revoletion(
+                    scenario_path=stage_scenario_path,
+                    year=year
+                )
 
-            # 3. Store results
-            self.results[year] = stage_results
+                # 3. Parse results
+                stage_result = self.results_parser.parse_stage_results(
+                    result_dir=result_dir,
+                    stage_year=year,
+                    discount_rate=self.discount_rate
+                )
 
-            print(f"\nStage {year} completed successfully!")
-            self.print_stage_summary(year, stage_results)
+                # 4. Store results for next stage
+                self.stage_results[year] = stage_result
 
-        # 4. Calculate overall NPV
-        total_npv = self.calculate_multi_stage_npv()
+                # 5. Print summary
+                self._print_stage_summary(year, stage_result)
 
-        # 5. Save final results
-        self.save_results()
+            except Exception as e:
+                print(f"\n❌ ERROR in stage {year}: {e}")
+                raise
 
-        print(f"\n{'=' * 60}")
-        print(f"Multi-Stage Optimization Complete!")
-        print(f"Total NPV: ${total_npv:,.2f}")
-        print(f"{'=' * 60}\n")
+        # Aggregate results across all stages
+        aggregated = self.results_parser.aggregate_multi_stage_results(
+            self.stage_results
+        )
 
-        return self.results
+        # Save final results
+        self._save_results(aggregated)
 
-    def generate_stage_scenario(
-            self,
-            year: int,
-            stage_idx: int
-    ) -> Path:
+        # Print final summary
+        self._print_final_summary(aggregated)
+
+        return aggregated
+
+    def _generate_stage_scenario(self, year: int, stage_idx: int) -> Path:
         """
-        Generate scenario CSV file for a specific stage.
+        Generate scenario CSV for a specific stage.
 
-        If stage_idx > 0, use previous stage's optimized capacities
-        as 'size_existing' for this stage.
-        """
-        # Read base scenario template
-        scenario_df = pd.read_csv(self.base_scenario_path)
-
-        # If not first stage, update with previous capacities
-        if stage_idx > 0:
-            prev_year = self.stages[stage_idx - 1]
-            prev_results = self.results[prev_year]
-
-            # Update existing sizes from previous stage
-            # Example: PV capacity
-            if 'pv_size_total' in prev_results:
-                pv_size = prev_results['pv_size_total']
-                # Find row where block='pv' and key='size_existing'
-                mask = (scenario_df['block'] == 'pv') & (scenario_df['key'] == 'size_existing')
-                scenario_df.loc[mask, scenario_df.columns[2]] = pv_size  # Column 2 is scenario data
-
-            # Similar for battery, grid, chargers...
-            # (You'll expand this based on actual components)
-
-        # Update scenario parameters for this stage
-        # (e.g., future electricity prices, fleet size, etc.)
-
-        # Save stage-specific scenario file
-        stage_scenario_path = self.output_dir / f"scenario_stage_{year}.csv"
-        scenario_df.to_csv(stage_scenario_path, index=False)
-
-        print(f"Generated scenario file: {stage_scenario_path}")
-        return stage_scenario_path
-
-    def run_revoletion_stage(
-            self,
-            scenario_path: Path,
-            year: int
-    ) -> Dict:
-        """
-        Run REVOL-E-TION for a single stage.
+        Parameters:
+        -----------
+        year : int
+            Stage year
+        stage_idx : int
+            Index in stages list (0-based)
 
         Returns:
-            Dictionary with stage results
+        --------
+        Path : Generated scenario file path
         """
-        print(f"\nRunning REVOL-E-TION for year {year}...")
+        print(f"\n1. Generating scenario for year {year}")
+
+        # Get previous stage results (if not first stage)
+        previous_results = None
+        if stage_idx > 0:
+            prev_year = self.stages[stage_idx - 1]
+            previous_results = self.stage_results[prev_year]
+            print(f"  - Inheriting capacities from year {prev_year}")
+
+        # Create stage scenario
+        output_path = self.output_dir / f"scenario_stage_{year}.csv"
+        self.scenario_builder.create_stage_scenario(
+            stage_year=year,
+            output_path=output_path,
+            previous_stage_results=previous_results,
+            scenario_column=self.scenario_column
+        )
+
+        return output_path
+
+    def _run_revoletion(self, scenario_path: Path, year: int) -> Path:
+        """
+        Run REVOL-E-TION optimization.
+
+        Parameters:
+        -----------
+        scenario_path : Path
+            Scenario file for this stage
+        year : int
+            Stage year
+
+        Returns:
+        --------
+        Path : Results directory
+        """
+        print(f"\n2. Running REVOL-E-TION optimization")
 
         # Build command
-        revoletion_dir = Path(__file__).parent.parent / "revoletion"
         cmd = [
-            'python3', '-m', 'revoletion.main',
-            '--settings', str(self.settings_path.resolve()),
-            '--scenario', str(scenario_path.resolve())
+            sys.executable,  # Use current Python interpreter (from venv)
+            '-m', 'revoletion.main',
+            '--settings', str(self.settings_path.absolute()),
+            '--scenario', str(scenario_path.absolute())
         ]
 
-        # Run REVOL-E-TION
+        print(f"  - Command: {' '.join(cmd)}")
+        print(f"  - Working dir: {self.revoletion_dir}")
+
+        # Run optimization
         result = subprocess.run(
             cmd,
-            cwd=str(revoletion_dir),
+            cwd=str(self.revoletion_dir),
             capture_output=True,
-            text=True
+            text=True,
+            timeout=600  # 10 minute timeout
         )
 
         if result.returncode != 0:
-            print(f"ERROR: REVOL-E-TION failed for year {year}")
-            print(f"STDERR: {result.stderr}")
-            raise RuntimeError(f"Stage {year} optimization failed")
+            print(f"\n❌ REVOL-E-TION failed!")
+            print(f"STDOUT:\n{result.stdout}")
+            print(f"STDERR:\n{result.stderr}")
+            raise RuntimeError(f"REVOL-E-TION optimization failed for year {year}")
 
-        print(f"REVOL-E-TION completed for year {year}")
+        print(f"  ✓ REVOL-E-TION completed successfully")
 
-        # Parse results
-        stage_results = self.parse_revoletion_output(scenario_path)
+        # Find results directory
+        results_base = self.revoletion_dir / "results"
+        result_dir = self.results_parser.get_latest_result_dir(results_base)
 
-        return stage_results
+        print(f"  ✓ Results directory: {result_dir.name}")
 
-    def parse_revoletion_output(
-            self,
-            scenario_path: Path
-    ) -> Dict:
-        """
-        Parse REVOL-E-TION output files to extract results.
+        return result_dir
 
-        Returns:
-            Dictionary with parsed results
-        """
-        # REVOL-E-TION creates results in revoletion/results/
-        # Find the most recent results directory
-        results_base = Path(__file__).parent.parent / "revoletion" / "results"
+    def _print_stage_summary(self, year: int, results: Dict):
+        """Print summary of stage results."""
+        print(f"\n3. Stage {year} Results:")
+        print(f"  ├─ Status: {results.get('status', 'unknown')}")
+        print(f"  ├─ NPV: ${results.get('npv', 0):,.0f}")
+        print(f"  ├─ NPV (discounted): ${results.get('npv_discounted', 0):,.0f}")
+        print(f"  ├─ CAPEX: ${results.get('capex_prj', 0):,.0f}")
+        print(f"  ├─ OPEX: ${results.get('opex_prj', 0):,.0f}")
 
-        # Get most recent results directory
-        result_dirs = sorted(results_base.glob("*"), key=os.path.getmtime, reverse=True)
-        if not result_dirs:
-            raise RuntimeError("No REVOL-E-TION results found")
+        pv = results.get('pv_size_total', 0)
+        ess = results.get('ess_size_total', 0)
+        grid = results.get('grid_size_g2s', 0)
 
-        latest_results_dir = result_dirs[0]
-        print(f"Parsing results from: {latest_results_dir}")
+        if pv:
+            print(f"  ├─ PV total: {pv/1000:.1f} kW")
+            pv_new = results.get('pv_size_invest', 0)
+            if pv_new:
+                print(f"  │  └─ New: {pv_new/1000:.1f} kW")
 
-        # Parse summary CSV
-        summary_files = list(latest_results_dir.glob("*_summary.csv"))
-        if not summary_files:
-            raise RuntimeError("No summary file found")
+        if ess:
+            print(f"  ├─ Battery total: {ess/1000:.1f} kWh")
+            ess_new = results.get('ess_size_invest', 0)
+            if ess_new:
+                print(f"  │  └─ New: {ess_new/1000:.1f} kWh")
 
-        summary_df = pd.read_csv(summary_files[0])
+        if grid:
+            print(f"  └─ Grid g2s: {grid/1000:.1f} kW")
 
-        # Extract key results
-        results = {
-            'results_dir': str(latest_results_dir),
-            'npv': self._extract_value(summary_df, 'npv'),
-            'npc': self._extract_value(summary_df, 'npc'),
-            'lcoe': self._extract_value(summary_df, 'lcoe'),
-        }
+    def _print_final_summary(self, aggregated: Dict):
+        """Print final multi-stage summary."""
+        print(f"\n{'='*80}")
+        print(f"MULTI-STAGE OPTIMIZATION COMPLETE")
+        print(f"{'='*80}")
+        print(f"Total NPV (discounted): ${aggregated['total_npv']:,.0f}")
+        print(f"Total CAPEX: ${aggregated['total_capex']:,.0f}")
+        print(f"\nInvestment Timeline:")
 
-        # Extract component sizes
-        component_sizes = {
-            'pv_size_total': self._extract_value(summary_df, 'pv', 'size', 'total'),
-            'ess_size_total': self._extract_value(summary_df, 'ess', 'size', 'total'),
-            'grid_size_g2s_total': self._extract_value(summary_df, 'grid', 'size', 'g2s', 'total'),
-        }
+        timeline = aggregated['investment_timeline']
+        for _, row in timeline.iterrows():
+            print(f"  {int(row['year'])}: "
+                  f"PV {row['pv_new_kw']:.0f} kW, "
+                  f"ESS {row['ess_new_kwh']:.0f} kWh, "
+                  f"CAPEX ${row['capex']:,.0f}")
 
-        results.update(component_sizes)
+        print(f"{'='*80}\n")
 
-        return results
+    def _save_results(self, aggregated: Dict):
+        """Save aggregated results to JSON and CSV."""
+        # Save full results as JSON
+        json_path = self.output_dir / "multi_stage_results.json"
+        with open(json_path, 'w') as f:
+            json.dump(aggregated['stage_results'], f, indent=2, default=str)
+        print(f"\n✓ Results saved to: {json_path}")
 
-    def _extract_value(self, df: pd.DataFrame, *keys) -> Optional[float]:
-        """Helper to extract values from summary DataFrame"""
-        try:
-            # This is a placeholder - actual extraction depends on
-            # how REVOL-E-TION structures its summary CSV
-            # You'll need to inspect the actual file format
-            return 0.0  # Placeholder
-        except:
-            return None
-
-    def print_stage_summary(self, year: int, results: Dict):
-        """Print summary of stage results"""
-        print(f"\nResults for Stage {year}:")
-        print(f"  NPV: ${results.get('npv', 0):,.2f}")
-        print(f"  NPC: ${results.get('npc', 0):,.2f}")
-        print(f"  LCOE: ${results.get('lcoe', 0):.2f}/kWh")
-        if results.get('pv_size_total'):
-            print(f"  PV Capacity: {results['pv_size_total'] / 1000:.1f} kW")
-        if results.get('ess_size_total'):
-            print(f"  Battery Capacity: {results['ess_size_total'] / 1000:.1f} kWh")
-
-    def calculate_multi_stage_npv(self) -> float:
-        """
-        Calculate total NPV across all stages.
-
-        This is simplified - you'll need proper discounting
-        """
-        total_npv = sum(
-            stage_results.get('npv', 0)
-            for stage_results in self.results.values()
-        )
-        return total_npv
-
-    def save_results(self):
-        """Save final multi-stage results"""
-        output_file = self.output_dir / "multi_stage_results.json"
-
-        with open(output_file, 'w') as f:
-            json.dump(self.results, f, indent=2, default=str)
-
-        print(f"\nResults saved to: {output_file}")
-
-
-# Example usage
-if __name__ == "__main__":
-    optimizer = SequentialStageOptimizer(
-        stages=[2025, 2030, 2035],  # Start with just 3 stages for testing
-        base_scenario_path="../revoletion/example/scenarios_example.csv",
-        settings_path="../revoletion/example/settings.csv"
-    )
-
-    results = optimizer.optimize()
+        # Save investment timeline as CSV
+        csv_path = self.output_dir / "investment_timeline.csv"
+        aggregated['investment_timeline'].to_csv(csv_path, index=False)
+        print(f"✓ Timeline saved to: {csv_path}")
