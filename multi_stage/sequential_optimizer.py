@@ -223,6 +223,13 @@ class SequentialStageOptimizer:
             print(f"STDERR:\n{result.stderr}")
             raise RuntimeError(f"REVOL-E-TION optimization failed for year {year}")
 
+        # Check stdout for debug messages (CO2 constraint, etc.)
+        if "DEBUG" in result.stdout:
+            print(f"\n  Debug output:")
+            for line in result.stdout.split('\n'):
+                if "DEBUG" in line or (line.strip().startswith('-') and 'CO2' in line):
+                    print(f"    {line}")
+
         print(f"  ✓ REVOL-E-TION completed successfully")
 
         # Find results directory
