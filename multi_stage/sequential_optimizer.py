@@ -124,9 +124,26 @@ class SequentialStageOptimizer:
 
                 # 6. Stop if infeasible (can't continue to next stage)
                 if stage_result.get('status') == 'infeasible':
-                    print(f"\n❌ Multi-stage optimization STOPPED due to infeasible stage {year}")
-                    print(f"   Suggestion: Relax constraints (e.g., increase CO2 limit) or check scenario setup")
-                    return {'error': 'infeasible_stage', 'completed_stages': self.stage_results}
+                    print(f"\n{'='*80}")
+                    print(f"❌ MULTI-STAGE OPTIMIZATION STOPPED - INFEASIBLE STAGE")
+                    print(f"{'='*80}")
+                    print(f"Stage {year} was INFEASIBLE - no solution found.")
+                    print(f"\nPossible causes:")
+                    print(f"  • CO2 constraint too tight for available technologies")
+                    print(f"  • Insufficient capacity inherited from previous stage")
+                    print(f"  • Conflicting constraints (e.g., demand > max grid + PV + ESS)")
+                    print(f"\nSuggestions:")
+                    print(f"  • Increase CO2 limit (current pathway: 500 kg → 100 kg)")
+                    print(f"  • Reduce fleet growth rate (current: 10%/yr)")
+                    print(f"  • Check scenario constraints in template CSV")
+                    print(f"\nCompleted stages: {list(self.stage_results.keys())}")
+                    print(f"{'='*80}\n")
+                    return {
+                        'error': 'infeasible_stage',
+                        'infeasible_year': year,
+                        'completed_stages': self.stage_results,
+                        'total_stages': len(self.stages)
+                    }
 
             except Exception as e:
                 print(f"\n❌ ERROR in stage {year}: {e}")
@@ -169,13 +186,26 @@ class SequentialStageOptimizer:
             previous_results = self.stage_results[prev_year]
             print(f"  - Inheriting capacities from year {prev_year}")
 
+        # Calculate stage duration (years until next stage)
+        if stage_idx < len(self.stages) - 1:
+            # Not the last stage - calculate from next stage year
+            stage_duration = self.stages[stage_idx + 1] - year
+        else:
+            # Last stage - use same duration as previous stage
+            if stage_idx > 0:
+                stage_duration = year - self.stages[stage_idx - 1]
+            else:
+                # Single stage - use default of 5 years
+                stage_duration = 5
+
         # Create stage scenario
         output_path = self.output_dir / f"scenario_stage_{year}.csv"
         self.scenario_builder.create_stage_scenario(
             stage_year=year,
             output_path=output_path,
             previous_stage_results=previous_results,
-            scenario_column=self.scenario_column
+            scenario_column=self.scenario_column,
+            stage_duration=stage_duration
         )
 
         return output_path
@@ -243,12 +273,14 @@ class SequentialStageOptimizer:
     def _print_stage_summary(self, year: int, results: Dict):
         """Print summary of stage results."""
         print(f"\n3. Stage {year} Results:")
-        print(f"  ├─ Status: {results.get('status', 'unknown')}")
 
         # Handle infeasible scenarios
         if results.get('status') == 'infeasible':
-            print(f"  └─ ⚠️  INFEASIBLE - No solution found (constraints too tight)")
+            print(f"  ├─ Status: ❌ INFEASIBLE")
+            print(f"  └─ ⚠️  No solution found - constraints too tight!")
             return
+
+        print(f"  ├─ Status: ✓ {results.get('status', 'unknown')}")
 
         print(f"  ├─ NPV: ${results.get('npv', 0):,.0f}")
         print(f"  ├─ NPV (discounted): ${results.get('npv_discounted', 0):,.0f}")

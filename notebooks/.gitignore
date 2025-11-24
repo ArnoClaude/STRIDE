@@ -1,0 +1,10 @@
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Generated outputs (plots, data exports)
+# Each notebook has its own output/ directory
+*/output/
+
+# Temporary test files
+*_test_*.csv
+*_debug_*.csv

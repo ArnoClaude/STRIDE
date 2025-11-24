@@ -32,7 +32,8 @@ class ScenarioBuilder:
         stage_year: int,
         output_path: Path,
         previous_stage_results: Optional[Dict] = None,
-        scenario_column: str = None
+        scenario_column: str = None,
+        stage_duration: int = None
     ) -> Path:
         """
         Create scenario CSV for a specific stage.
@@ -47,6 +48,9 @@ class ScenarioBuilder:
             Results from previous stage (for stage linking)
         scenario_column : str, optional
             Name of scenario column in template to use
+        stage_duration : int, optional
+            Duration of this stage in years (e.g., 5 for 2025-2030)
+            If not provided, uses template default (typically 25 years)
 
         Returns:
         --------
@@ -78,6 +82,13 @@ class ScenarioBuilder:
             if pd.notna(co2_value) and co2_value != '' and co2_value != 'None':
                 print(f"  - CO2 limit: {co2_value} kg")
 
+        # Update project duration for this stage
+        if stage_duration is not None:
+            prj_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'prj_duration')
+            if prj_mask.any():
+                scenario_df.loc[prj_mask, scenario_column] = stage_duration
+                print(f"  - Stage duration: {stage_duration} years")
+
         # 1. Apply stage-linking constraints (if not first stage)
         if previous_stage_results is not None:
             scenario_df = self._apply_stage_linking(
@@ -86,11 +97,14 @@ class ScenarioBuilder:
                 scenario_column
             )
 
-        # 2. Update costs for this stage year (future work - cost curves)
-        # scenario_df = self._update_costs(scenario_df, stage_year, scenario_column)
+        # 2. Update costs for this stage year (technology learning curves)
+        scenario_df = self._update_costs(scenario_df, stage_year, scenario_column)
 
-        # 3. Update demand/fleet size (future work)
-        # scenario_df = self._update_demand(scenario_df, stage_year, scenario_column)
+        # 3. Update demand/fleet size (growth trajectory)
+        scenario_df = self._update_demand(scenario_df, stage_year, scenario_column)
+
+        # 4. Update CO2 limits (decarbonization pathway)
+        scenario_df = self._update_co2_limits(scenario_df, stage_year, scenario_column)
 
         # Save to output path
         scenario_df.to_csv(output_path, index=False)
@@ -165,12 +179,36 @@ class ScenarioBuilder:
         """
         Update technology costs based on stage year.
 
-        Placeholder for future cost curve implementation.
+        Implements exponential cost decline curves:
+        - PV: 5% annual decline
+        - ESS: 8% annual decline
         """
-        # TODO: Implement cost curves
-        # - PV capex_spec declining over time
-        # - ESS capex_spec declining over time
-        # - Charger costs
+        base_year = 2025
+        years_elapsed = stage_year - base_year
+
+        if years_elapsed > 0:
+            # PV: 5% annual decline
+            pv_decline_rate = 0.05
+            pv_mask = (df['block'] == 'pv') & (df['key'] == 'capex_spec')
+            if pv_mask.any():
+                pv_cost_base = df.loc[pv_mask, column].values[0]
+                if pd.notna(pv_cost_base) and pv_cost_base != '' and pv_cost_base != 'None':
+                    pv_cost_base = float(pv_cost_base)
+                    pv_cost_new = pv_cost_base * ((1 - pv_decline_rate) ** years_elapsed)
+                    df.loc[pv_mask, column] = pv_cost_new
+                    print(f"  - PV cost: ${pv_cost_base:.2f}/W → ${pv_cost_new:.2f}/W ({-pv_decline_rate*100:.0f}%/yr)")
+
+            # ESS: 8% annual decline
+            ess_decline_rate = 0.08
+            ess_mask = (df['block'] == 'ess') & (df['key'] == 'capex_spec')
+            if ess_mask.any():
+                ess_cost_base = df.loc[ess_mask, column].values[0]
+                if pd.notna(ess_cost_base) and ess_cost_base != '' and ess_cost_base != 'None':
+                    ess_cost_base = float(ess_cost_base)
+                    ess_cost_new = ess_cost_base * ((1 - ess_decline_rate) ** years_elapsed)
+                    df.loc[ess_mask, column] = ess_cost_new
+                    print(f"  - ESS cost: ${ess_cost_base:.3f}/Wh → ${ess_cost_new:.3f}/Wh ({-ess_decline_rate*100:.0f}%/yr)")
+
         return df
 
     def _update_demand(
@@ -182,12 +220,75 @@ class ScenarioBuilder:
         """
         Update demand/fleet size based on growth projections.
 
-        Placeholder for future demand evolution implementation.
+        Implements 10% annual fleet growth:
+        - Scales demand profile proportionally
+        - Updates fleet size (number of vehicles)
+        - Updates annual consumption
         """
-        # TODO: Implement fleet growth
-        # - Scale demand profile
-        # - Increase number of vehicles
-        # - Update consumption_yrl
+        base_year = 2025
+        years_elapsed = stage_year - base_year
+
+        if years_elapsed > 0:
+            growth_rate = 0.10  # 10% annual growth
+            growth_factor = (1 + growth_rate) ** years_elapsed
+
+            # Update fleet size (number of vehicles)
+            fleet_mask = (df['block'] == 'bev') & (df['key'] == 'size_existing')
+            if fleet_mask.any():
+                fleet_base = df.loc[fleet_mask, column].values[0]
+                if pd.notna(fleet_base) and fleet_base != '' and fleet_base != 'None':
+                    fleet_base = float(fleet_base)
+                    fleet_new = fleet_base * growth_factor
+                    df.loc[fleet_mask, column] = fleet_new
+                    print(f"  - Fleet size: {fleet_base:.0f} vehicles → {fleet_new:.0f} vehicles (+{growth_rate*100:.0f}%/yr)")
+
+            # Update annual consumption (scales with fleet)
+            # NOTE: consumption_yrl is in 'dem' block, not 'bev' block
+            consumption_mask = (df['block'] == 'dem') & (df['key'] == 'consumption_yrl')
+            if consumption_mask.any():
+                consumption_base = df.loc[consumption_mask, column].values[0]
+                if pd.notna(consumption_base) and consumption_base != '' and consumption_base != 'None':
+                    consumption_base = float(consumption_base)
+                    consumption_new = consumption_base * growth_factor
+                    df.loc[consumption_mask, column] = consumption_new
+                    print(f"  - Annual consumption: {consumption_base/1e6:.1f} MWh → {consumption_new/1e6:.1f} MWh")
+
+        return df
+
+    def _update_co2_limits(
+        self,
+        df: pd.DataFrame,
+        stage_year: int,
+        column: str
+    ) -> pd.DataFrame:
+        """
+        Update CO2 limits based on decarbonization pathway.
+
+        Implements linear tightening from 500 kg (2025) to 100 kg (2050).
+        Always applies the pathway, including for base year.
+        """
+        base_year = 2025
+        target_year = 2050
+        years_elapsed = stage_year - base_year
+
+        # Linear decarbonization pathway (applies to ALL years including base)
+        co2_start = 500  # kg for 50-day simulation period
+        co2_end = 100    # kg for 50-day simulation period
+        co2_slope = (co2_end - co2_start) / (target_year - base_year)
+        co2_limit_new = co2_start + co2_slope * years_elapsed
+
+        # Update CO2 limit
+        co2_mask = (df['block'] == 'scenario') & (df['key'] == 'co2_max')
+        if co2_mask.any():
+            co2_limit_base = df.loc[co2_mask, column].values[0]
+            if pd.notna(co2_limit_base) and co2_limit_base != '' and co2_limit_base != 'None':
+                co2_limit_base = float(co2_limit_base)
+                df.loc[co2_mask, column] = co2_limit_new
+                if years_elapsed > 0:
+                    print(f"  - CO2 limit: {co2_limit_base:.0f} kg → {co2_limit_new:.0f} kg (decarbonization pathway)")
+                else:
+                    print(f"  - CO2 limit: {co2_limit_base:.0f} kg → {co2_limit_new:.0f} kg (pathway baseline)")
+
         return df
 
     def extract_scenario_column_names(self) -> list:
