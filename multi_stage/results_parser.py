@@ -107,12 +107,12 @@ class ResultsParser:
             except Exception as e:
                 print(f"  ⚠️  Warning: Could not read status file: {e}")
 
-        # Handle infeasible scenarios (no summary CSV generated)
+        # Handle infeasible/failed scenarios (no summary CSV generated)
         summary_files = list(result_dir.glob("*_summary.csv"))
         if not summary_files:
-            if scenario_status == 'infeasible':
-                print(f"  ⚠️  Scenario was INFEASIBLE - no summary generated")
-                return self._create_infeasible_results(stage_year, result_dir)
+            if scenario_status in ['infeasible', 'failed']:
+                print(f"  ⚠️  Scenario {scenario_status.upper()} - no summary generated")
+                return self._create_infeasible_results(stage_year, result_dir, status=scenario_status)
             else:
                 raise FileNotFoundError(f"No summary CSV found in {result_dir}")
 
@@ -121,7 +121,7 @@ class ResultsParser:
             df = pd.read_csv(summary_file)
         except Exception as e:
             print(f"  ⚠️  Warning: Could not read summary file: {e}")
-            return self._create_infeasible_results(stage_year, result_dir)
+            return self._create_infeasible_results(stage_year, result_dir, status='failed')
 
         # Helper function to extract values
         def get_value(block: str, key: str) -> Optional[float]:
@@ -216,15 +216,16 @@ class ResultsParser:
 
         return results
 
-    def _create_infeasible_results(self, stage_year: int, result_dir: Path) -> Dict:
-        """Create results dict for infeasible scenario (all None values)."""
+    def _create_infeasible_results(self, stage_year: int, result_dir: Path,
+                                    status: str = 'infeasible') -> Dict:
+        """Create results dict for infeasible/failed scenario (all None values)."""
         base_year = min(self.config.stages)
         years_from_base = stage_year - base_year
         discount_factor = 1 / ((1 + self.config.wacc) ** years_from_base)
 
         results = {
             'stage_year': stage_year,
-            'status': 'infeasible',
+            'status': status,
             'result_dir': str(result_dir),
             'npv': None,
             'npc': None,

@@ -9,7 +9,7 @@ scenario,len_ph,
 scenario,len_ch,
 scenario,truncate_ph,True
 scenario,invest_max,
-scenario,co2_max,60.0
+scenario,co2_max,17.5
 scenario,wacc,0.09
 scenario,currency,USD
 scenario,latitude,48.2652
@@ -50,7 +50,7 @@ wind,opex_spec,0
 wind,ls,20
 wind,ccr,1
 wind,eff,0.95
-pv,size_existing,0.0
+pv,size_existing,173773.0165706875
 pv,capex_existing,True
 pv,size_max,
 pv,invest,True
@@ -76,7 +76,7 @@ gen,ccr,1
 gen,eff,1
 grid,size_g2s_existing,15841.863398835852
 grid,capex_existing_g2s,True
-grid,size_g2s_max,
+grid,size_g2s_max,75000
 grid,invest_g2s,True
 grid,size_s2g_existing,15841.863398835852
 grid,capex_existing_s2g,True
@@ -85,17 +85,17 @@ grid,invest_s2g,equal
 grid,system,ac
 grid,peakshaving,
 grid,opex_spec_peak,0
-grid,capex_spec,0.5
+grid,capex_spec,1.0
 grid,mntex_spec,0
 grid,ls,10
 grid,ccr,1
 grid,eff,1
 grid,filename_markets,
 grid,res_only,False
-grid,opex_spec_g2s,grid_opex_g2s
+grid,opex_spec_g2s,grid_opex_g2s_high
 grid,opex_spec_s2g,grid_opex_s2g
 grid,co2_spec_g2s,0.4
-ess,size_existing,21947.428565825925
+ess,size_existing,475129.68158122094
 ess,capex_existing,True
 ess,size_max,
 ess,invest,True

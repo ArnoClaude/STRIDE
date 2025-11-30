@@ -9,7 +9,7 @@ scenario,len_ph,
 scenario,len_ch,
 scenario,truncate_ph,True
 scenario,invest_max,
-scenario,co2_max,100
+scenario,co2_max,30
 scenario,wacc,0.09
 scenario,currency,USD
 scenario,latitude,48.2652
@@ -76,7 +76,7 @@ gen,ccr,1
 gen,eff,1
 grid,size_g2s_existing,0
 grid,capex_existing_g2s,True
-grid,size_g2s_max,
+grid,size_g2s_max,75000
 grid,invest_g2s,True
 grid,size_s2g_existing,equal
 grid,capex_existing_s2g,True
@@ -85,14 +85,14 @@ grid,invest_s2g,equal
 grid,system,ac
 grid,peakshaving,
 grid,opex_spec_peak,0
-grid,capex_spec,0.5
+grid,capex_spec,1.0
 grid,mntex_spec,0
 grid,ls,10
 grid,ccr,1
 grid,eff,1
 grid,filename_markets,
 grid,res_only,False
-grid,opex_spec_g2s,grid_opex_g2s
+grid,opex_spec_g2s,grid_opex_g2s_high
 grid,opex_spec_s2g,grid_opex_s2g
 grid,co2_spec_g2s,0.4
 ess,size_existing,0
