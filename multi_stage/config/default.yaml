@@ -1,0 +1,65 @@
+# Default configuration for multi-stage optimization
+# STRIDE - Sequential Temporal Resource Investment for Depot Electrification
+
+# Stage configuration
+stages:
+  years: [2025, 2030, 2035]  # Years to optimize
+  duration_years: 5           # Duration of each stage
+
+# Technology cost evolution
+technology_costs:
+  pv:
+    base_year: 2025
+    base_cost_per_w: 0.50           # $/W in 2025
+    annual_decline_rate: 0.05       # 5% per year
+  ess:
+    base_year: 2025
+    base_cost_per_wh: 0.250         # $/Wh in 2025
+    annual_decline_rate: 0.08       # 8% per year
+
+# Fleet demand growth
+demand:
+  base_year: 2025
+  base_num_vehicles: 30000          # Initial fleet size
+  annual_growth_rate: 0.10          # 10% per year
+
+# CO2 emissions pathway (TIGHT - forces renewable investments)
+emissions:
+  pathway_type: "linear"            # linear, exponential, or step
+  base_year: 2025
+  base_limit_kg: 100                # kg CO2 in 2025 (tight!)
+  final_year: 2035
+  final_limit_kg: 20                # kg CO2 in 2035 (very tight!)
+  # Pathway: 2025=100kg → 2030=60kg → 2035=20kg
+
+# Economic parameters
+economics:
+  wacc: 0.09                        # 9% weighted average cost of capital
+
+# Block definitions (investable assets and demand blocks)
+blocks:
+  investable:
+    - name: "pv"
+      cost_param: "capex_spec"
+      size_param: "size_invest"
+    - name: "ess"
+      cost_param: "capex_spec"
+      size_param: "size_invest"
+    - name: "grid"
+      cost_param: "capex_g2s"
+      size_param: "size_invest_g2s"
+  demand:
+    - name: "bev"
+      size_param: "size_existing"
+    - name: "dem"
+      consumption_param: "consumption_yrl"
+
+# REVOL-E-TION paths
+revoletion:
+  settings_path: "revoletion/example/settings.csv"
+  results_base_dir: "revoletion/results"
+
+# Output paths
+output:
+  stage_scenarios_dir: "multi_stage/generated_scenarios"
+  summary_output_dir: "multi_stage/results"

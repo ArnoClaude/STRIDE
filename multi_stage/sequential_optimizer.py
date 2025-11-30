@@ -14,8 +14,9 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
+from .config_loader import MultiStageConfig
 from .scenario_builder import ScenarioBuilder
 from .results_parser import ResultsParser
 
@@ -26,53 +27,80 @@ class SequentialStageOptimizer:
 
     Runs optimization for each stage independently, feeding investment
     decisions forward as constraints for subsequent stages.
+
+    Config-driven implementation - all parameters from MultiStageConfig.
     """
 
     def __init__(
         self,
-        stages: List[int],
+        config: MultiStageConfig,
         template_scenario_path: Path,
-        settings_path: Path,
-        revoletion_dir: Path,
         output_dir: Path,
-        scenario_column: str = None,
-        discount_rate: float = 0.09
+        scenario_column: str = None
     ):
         """
         Parameters:
         -----------
-        stages : list of int
-            Years to optimize (e.g., [2025, 2030, 2035, 2040, 2045, 2050])
+        config : MultiStageConfig
+            Configuration object with all optimization parameters
         template_scenario_path : Path
             Base scenario CSV template
-        settings_path : Path
-            REVOL-E-TION settings CSV
-        revoletion_dir : Path
-            Directory containing REVOL-E-TION installation
         output_dir : Path
             Directory for saving results
         scenario_column : str, optional
             Which column from template to use (default: first scenario column)
-        discount_rate : float
-            WACC for NPV discounting (default: 0.09)
         """
-        self.stages = stages
+        self.config = config
         self.template_scenario_path = template_scenario_path
-        self.settings_path = settings_path
-        self.revoletion_dir = revoletion_dir
         self.output_dir = output_dir
         self.scenario_column = scenario_column
-        self.discount_rate = discount_rate
 
         # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Initialize helper classes
-        self.scenario_builder = ScenarioBuilder(template_scenario_path)
-        self.results_parser = ResultsParser()
+        # Create generated scenarios directory
+        self.config.stage_scenarios_dir.mkdir(parents=True, exist_ok=True)
 
-        # Storage for stage results
+        # Initialize helper classes (config-driven)
+        self.scenario_builder = ScenarioBuilder(template_scenario_path, config)
+        self.results_parser = ResultsParser(config)
+
+        # Storage for stage results (explicit tracking - no get_latest_result_dir)
         self.stage_results = {}
+
+        # Validate setup before running
+        self._validate_setup()
+
+    def _validate_setup(self):
+        """Pre-run validation to catch configuration errors early."""
+        # Check template exists
+        if not self.template_scenario_path.exists():
+            raise FileNotFoundError(f"Template scenario not found: {self.template_scenario_path}")
+
+        # Check settings file exists
+        if not self.config.revoletion_settings_path.exists():
+            raise FileNotFoundError(f"Settings file not found: {self.config.revoletion_settings_path}")
+
+        # Config validation already done in MultiStageConfig.validate()
+        # ScenarioBuilder._validate_template() checks required blocks exist
+
+        print(f"✓ Setup validation passed")
+
+    def _get_unit(self, block_name: str) -> str:
+        """
+        Get display unit for a block.
+
+        Returns unit string for pretty printing (kW, kWh, vehicles, etc.)
+        """
+        name_lower = block_name.lower()
+        if 'ess' in name_lower or 'batt' in name_lower or 'brs' in name_lower:
+            return 'kWh'
+        elif 'pv' in name_lower or 'wind' in name_lower or 'grid' in name_lower or 'gen' in name_lower:
+            return 'kW'
+        elif 'bev' in name_lower or 'icev' in name_lower:
+            return 'vehicles'
+        else:
+            return 'W'  # default power unit
 
     def optimize(self) -> Dict:
         """
@@ -85,15 +113,15 @@ class SequentialStageOptimizer:
         print(f"\n{'='*80}")
         print(f"STRIDE Sequential Multi-Stage Optimization")
         print(f"{'='*80}")
-        print(f"Stages: {self.stages}")
-        print(f"Discount rate (WACC): {self.discount_rate:.1%}")
+        print(f"Stages: {self.config.stages}")
+        print(f"Discount rate (WACC): {self.config.wacc:.1%}")
         print(f"Output directory: {self.output_dir}")
         print(f"{'='*80}\n")
 
         # Run each stage sequentially
-        for stage_idx, year in enumerate(self.stages):
+        for stage_idx, year in enumerate(self.config.stages):
             print(f"\n{'='*80}")
-            print(f"STAGE {stage_idx + 1}/{len(self.stages)}: Year {year}")
+            print(f"STAGE {stage_idx + 1}/{len(self.config.stages)}: Year {year}")
             print(f"{'='*80}")
 
             try:
@@ -112,11 +140,10 @@ class SequentialStageOptimizer:
                 # 3. Parse results
                 stage_result = self.results_parser.parse_stage_results(
                     result_dir=result_dir,
-                    stage_year=year,
-                    discount_rate=self.discount_rate
+                    stage_year=year
                 )
 
-                # 4. Store results for next stage
+                # 4. Store results for next stage (explicit - no fragile detection)
                 self.stage_results[year] = stage_result
 
                 # 5. Print summary
@@ -124,27 +151,17 @@ class SequentialStageOptimizer:
 
                 # 6. Stop if infeasible (can't continue to next stage)
                 if stage_result.get('status') == 'infeasible':
-                    print(f"\n{'='*80}")
-                    print(f"❌ MULTI-STAGE OPTIMIZATION STOPPED - INFEASIBLE STAGE")
-                    print(f"{'='*80}")
-                    print(f"Stage {year} was INFEASIBLE - no solution found.")
-                    print(f"\nPossible causes:")
-                    print(f"  • CO2 constraint too tight for available technologies")
-                    print(f"  • Insufficient capacity inherited from previous stage")
-                    print(f"  • Conflicting constraints (e.g., demand > max grid + PV + ESS)")
-                    print(f"\nSuggestions:")
-                    print(f"  • Increase CO2 limit (current pathway: 500 kg → 100 kg)")
-                    print(f"  • Reduce fleet growth rate (current: 10%/yr)")
-                    print(f"  • Check scenario constraints in template CSV")
-                    print(f"\nCompleted stages: {list(self.stage_results.keys())}")
-                    print(f"{'='*80}\n")
+                    self._print_infeasibility_diagnostic(year)
                     return {
                         'error': 'infeasible_stage',
                         'infeasible_year': year,
                         'completed_stages': self.stage_results,
-                        'total_stages': len(self.stages)
+                        'total_stages': len(self.config.stages)
                     }
 
+            except subprocess.TimeoutExpired as e:
+                print(f"\n❌ ERROR: Stage {year} timed out after {e.timeout}s")
+                raise
             except Exception as e:
                 print(f"\n❌ ERROR in stage {year}: {e}")
                 raise
@@ -182,30 +199,16 @@ class SequentialStageOptimizer:
         # Get previous stage results (if not first stage)
         previous_results = None
         if stage_idx > 0:
-            prev_year = self.stages[stage_idx - 1]
+            prev_year = self.config.stages[stage_idx - 1]
             previous_results = self.stage_results[prev_year]
-            print(f"  - Inheriting capacities from year {prev_year}")
 
-        # Calculate stage duration (years until next stage)
-        if stage_idx < len(self.stages) - 1:
-            # Not the last stage - calculate from next stage year
-            stage_duration = self.stages[stage_idx + 1] - year
-        else:
-            # Last stage - use same duration as previous stage
-            if stage_idx > 0:
-                stage_duration = year - self.stages[stage_idx - 1]
-            else:
-                # Single stage - use default of 5 years
-                stage_duration = 5
-
-        # Create stage scenario
-        output_path = self.output_dir / f"scenario_stage_{year}.csv"
+        # Create stage scenario (stage_duration comes from config, not calculated)
+        output_path = self.config.stage_scenarios_dir / f"scenario_stage_{year}.csv"
         self.scenario_builder.create_stage_scenario(
             stage_year=year,
             output_path=output_path,
             previous_stage_results=previous_results,
-            scenario_column=self.scenario_column,
-            stage_duration=stage_duration
+            scenario_column=self.scenario_column
         )
 
         return output_path
@@ -223,7 +226,7 @@ class SequentialStageOptimizer:
 
         Returns:
         --------
-        Path : Results directory
+        Path : Results directory (explicit - no guessing!)
         """
         print(f"\n2. Running REVOL-E-TION optimization")
 
@@ -231,17 +234,20 @@ class SequentialStageOptimizer:
         cmd = [
             sys.executable,  # Use current Python interpreter (from venv)
             '-m', 'revoletion.main',
-            '--settings', str(self.settings_path.absolute()),
+            '--settings', str(self.config.revoletion_settings_path.absolute()),
             '--scenario', str(scenario_path.absolute())
         ]
 
+        # Determine working directory (parent of settings file)
+        working_dir = self.config.revoletion_settings_path.parent.parent
+
         print(f"  - Command: {' '.join(cmd)}")
-        print(f"  - Working dir: {self.revoletion_dir}")
+        print(f"  - Working dir: {working_dir}")
 
         # Run optimization
         result = subprocess.run(
             cmd,
-            cwd=str(self.revoletion_dir),
+            cwd=str(working_dir),
             capture_output=True,
             text=True,
             timeout=600  # 10 minute timeout
@@ -262,16 +268,17 @@ class SequentialStageOptimizer:
 
         print(f"  ✓ REVOL-E-TION completed successfully")
 
-        # Find results directory
-        results_base = self.revoletion_dir / "results"
-        result_dir = self.results_parser.get_latest_result_dir(results_base)
+        # Find results directory (explicit - most recent in results_base_dir)
+        result_dir = self.results_parser.get_latest_result_dir(
+            self.config.revoletion_results_base_dir
+        )
 
         print(f"  ✓ Results directory: {result_dir.name}")
 
         return result_dir
 
     def _print_stage_summary(self, year: int, results: Dict):
-        """Print summary of stage results."""
+        """Print summary of stage results (generic - shows ALL investable blocks)."""
         print(f"\n3. Stage {year} Results:")
 
         # Handle infeasible scenarios
@@ -287,24 +294,54 @@ class SequentialStageOptimizer:
         print(f"  ├─ CAPEX: ${results.get('capex_prj', 0):,.0f}")
         print(f"  ├─ OPEX: ${results.get('opex_prj', 0):,.0f}")
 
-        pv = results.get('pv_size_total', 0) or 0
-        ess = results.get('ess_size_total', 0) or 0
-        grid = results.get('grid_size_g2s', 0) or 0
+        # Generic investment display - loop over ALL investable blocks from config
+        print(f"  ├─ Investments:")
 
-        if pv:
-            print(f"  ├─ PV total: {pv/1000:.1f} kW")
-            pv_new = results.get('pv_size_invest', 0) or 0
-            if pv_new:
-                print(f"  │  └─ New: {pv_new/1000:.1f} kW")
+        for block_cfg in self.config.investable_blocks:
+            total = results.get(f'{block_cfg.name}_size_total', 0) or 0
+            new = results.get(f'{block_cfg.name}_size_invest', 0) or 0
 
-        if ess:
-            print(f"  ├─ Battery total: {ess/1000:.1f} kWh")
-            ess_new = results.get('ess_size_invest', 0) or 0
-            if ess_new:
-                print(f"  │  └─ New: {ess_new/1000:.1f} kWh")
+            if total > 0:
+                unit = self._get_unit(block_cfg.name)
+                if unit in ['kW', 'kWh']:
+                    print(f"  │  ├─ {block_cfg.name}: {total/1000:.1f} {unit} total")
+                    if new > 0:
+                        print(f"  │  │  └─ New: {new/1000:.1f} {unit}")
+                elif unit == 'vehicles':
+                    print(f"  │  ├─ {block_cfg.name}: {int(total):,} {unit} total")
+                    if new > 0:
+                        print(f"  │  │  └─ New: {int(new):,} {unit}")
+                else:
+                    print(f"  │  ├─ {block_cfg.name}: {total:.0f} {unit} total")
+                    if new > 0:
+                        print(f"  │  │  └─ New: {new:.0f} {unit}")
 
-        if grid:
-            print(f"  └─ Grid g2s: {grid/1000:.1f} kW")
+        # Special display for grid g2s (if not already shown by investable_blocks loop)
+        grid_g2s = results.get('grid_size_g2s', 0) or 0
+        if grid_g2s > 0 and 'grid' not in [b.name for b in self.config.investable_blocks]:
+            print(f"  └─ Grid g2s: {grid_g2s/1000:.1f} kW")
+
+    def _print_infeasibility_diagnostic(self, year: int):
+        """Print diagnostic information for infeasible stage."""
+        print(f"\n{'='*80}")
+        print(f"❌ MULTI-STAGE OPTIMIZATION STOPPED - INFEASIBLE STAGE")
+        print(f"{'='*80}")
+        print(f"Stage {year} was INFEASIBLE - no solution found.")
+        print(f"\nPossible causes:")
+        print(f"  • CO2 constraint too tight for available technologies")
+        print(f"  • Insufficient capacity inherited from previous stage")
+        print(f"  • Conflicting constraints (e.g., demand > max grid + PV + ESS)")
+        print(f"\nSuggestions:")
+
+        # Config-driven suggestions
+        co2_limit = self.config.calculate_co2_limit(year)
+        print(f"  • Increase CO2 limit (current: {co2_limit:.0f} kg)")
+        print(f"  • Reduce fleet growth rate (current: {self.config.demand_annual_growth_rate*100:.0f}%/yr)")
+        print(f"  • Relax technology cost constraints")
+        print(f"  • Check scenario constraints in template CSV")
+
+        print(f"\nCompleted stages: {list(self.stage_results.keys())}")
+        print(f"{'='*80}\n")
 
     def _print_final_summary(self, aggregated: Dict):
         """Print final multi-stage summary."""

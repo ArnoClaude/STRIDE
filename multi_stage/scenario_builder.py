@@ -5,35 +5,76 @@ Generates stage-specific scenario CSV files with:
 - Updated existing capacities (from previous stage)
 - Technology costs (for this stage year)
 - Demand projections (for this stage year)
+- CO2 limits (decarbonization pathway)
 """
 
 from pathlib import Path
 from typing import Dict, Optional
 import pandas as pd
 
+from .config_loader import MultiStageConfig
+
 
 class ScenarioBuilder:
     """
     Build scenario CSV files for each stage of multi-stage optimization.
+    Config-driven implementation - no hardcoded parameters.
     """
 
-    def __init__(self, template_path: Path):
+    def __init__(self, template_path: Path, config: MultiStageConfig):
         """
         Parameters:
         -----------
         template_path : Path
             Path to base scenario CSV template
+        config : MultiStageConfig
+            Configuration object with all parameters
         """
         self.template_path = template_path
         self.template = pd.read_csv(template_path)
+        self.config = config
+
+        # Validate template has required blocks
+        self._validate_template()
+
+    def _validate_template(self):
+        """Check that template CSV contains all required blocks."""
+        existing_blocks = set(self.template['block'].unique())
+
+        # Check investable blocks
+        for block_cfg in self.config.investable_blocks:
+            if block_cfg.name not in existing_blocks:
+                raise ValueError(f"Required investable block '{block_cfg.name}' "
+                               f"not found in template. Available: {existing_blocks}")
+
+        # Check demand blocks
+        for block_cfg in self.config.demand_blocks:
+            if block_cfg.name not in existing_blocks:
+                raise ValueError(f"Required demand block '{block_cfg.name}' "
+                               f"not found in template. Available: {existing_blocks}")
+
+    def _get_unit(self, block_name: str) -> str:
+        """
+        Get display unit for a block.
+
+        Returns unit string for pretty printing (kW, kWh, vehicles, etc.)
+        """
+        name_lower = block_name.lower()
+        if 'ess' in name_lower or 'batt' in name_lower or 'brs' in name_lower:
+            return 'kWh'
+        elif 'pv' in name_lower or 'wind' in name_lower or 'grid' in name_lower or 'gen' in name_lower:
+            return 'kW'
+        elif 'bev' in name_lower or 'icev' in name_lower:
+            return 'vehicles'
+        else:
+            return 'W'  # default power unit
 
     def create_stage_scenario(
         self,
         stage_year: int,
         output_path: Path,
         previous_stage_results: Optional[Dict] = None,
-        scenario_column: str = None,
-        stage_duration: int = None
+        scenario_column: str = None
     ) -> Path:
         """
         Create scenario CSV for a specific stage.
@@ -48,9 +89,6 @@ class ScenarioBuilder:
             Results from previous stage (for stage linking)
         scenario_column : str, optional
             Name of scenario column in template to use
-        stage_duration : int, optional
-            Duration of this stage in years (e.g., 5 for 2025-2030)
-            If not provided, uses template default (typically 25 years)
 
         Returns:
         --------
@@ -59,15 +97,15 @@ class ScenarioBuilder:
         # Copy template
         scenario_df = self.template.copy()
 
-        # Determine which column to use (default to 3rd column after block/key)
+        # Determine which column to use
         if scenario_column is None:
-            # Use first scenario column (usually column index 2)
-            data_columns = [col for col in scenario_df.columns if col not in ['block', 'key']]
+            data_columns = [col for col in scenario_df.columns
+                          if col not in ['block', 'key']]
             if not data_columns:
                 raise ValueError("No scenario columns found in template")
             scenario_column = data_columns[0]
 
-        # Extract only the selected scenario column (drop all other scenario columns)
+        # Extract only the selected scenario column
         all_columns = scenario_df.columns.tolist()
         data_columns = [col for col in all_columns if col not in ['block', 'key']]
         columns_to_drop = [col for col in data_columns if col != scenario_column]
@@ -75,7 +113,7 @@ class ScenarioBuilder:
 
         print(f"  - Using scenario column: '{scenario_column}'")
 
-        # Print CO2 constraint if present
+        # Print current CO2 constraint if present
         co2_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'co2_max')
         if co2_mask.any():
             co2_value = scenario_df.loc[co2_mask, scenario_column].values[0]
@@ -83,11 +121,10 @@ class ScenarioBuilder:
                 print(f"  - CO2 limit: {co2_value} kg")
 
         # Update project duration for this stage
-        if stage_duration is not None:
-            prj_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'prj_duration')
-            if prj_mask.any():
-                scenario_df.loc[prj_mask, scenario_column] = stage_duration
-                print(f"  - Stage duration: {stage_duration} years")
+        prj_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'prj_duration')
+        if prj_mask.any():
+            scenario_df.loc[prj_mask, scenario_column] = self.config.stage_duration_years
+            print(f"  - Stage duration: {self.config.stage_duration_years} years")
 
         # 1. Apply stage-linking constraints (if not first stage)
         if previous_stage_results is not None:
@@ -121,8 +158,7 @@ class ScenarioBuilder:
         """
         Apply stage-linking constraints from previous stage results.
 
-        This sets 'size_existing' for each component to the total
-        capacity from the previous stage.
+        Generic implementation - loops over investable blocks from config.
 
         Parameters:
         -----------
@@ -137,36 +173,43 @@ class ScenarioBuilder:
         --------
         DataFrame : Updated scenario
         """
-        # PV: Previous total becomes existing
-        if 'pv_size_total' in prev_results and prev_results['pv_size_total'] is not None:
-            pv_size = prev_results['pv_size_total']  # in W
-            mask = (df['block'] == 'pv') & (df['key'] == 'size_existing')
-            df.loc[mask, column] = pv_size
-            print(f"  - PV existing: {pv_size/1000:.1f} kW (from previous stage)")
+        print("  - Inheriting capacities from previous stage:")
 
-        # ESS (battery): Previous total becomes existing
-        if 'ess_size_total' in prev_results and prev_results['ess_size_total'] is not None:
-            ess_size = prev_results['ess_size_total']  # in Wh
-            mask = (df['block'] == 'ess') & (df['key'] == 'size_existing')
-            df.loc[mask, column] = ess_size
-            print(f"  - ESS existing: {ess_size/1000:.1f} kWh (from previous stage)")
+        for block_cfg in self.config.investable_blocks:
+            # Key in results dict (e.g., 'pv_size_total', 'ess_size_total')
+            result_key = f"{block_cfg.name}_size_total"
 
-        # Grid connection (g2s = grid-to-system)
+            if result_key in prev_results and prev_results[result_key] is not None:
+                size = prev_results[result_key]
+
+                # Update size_existing in scenario CSV
+                mask = (df['block'] == block_cfg.name) & (df['key'] == 'size_existing')
+                if mask.any():
+                    df.loc[mask, column] = size
+
+                    # Generic pretty printing using unit helper
+                    unit = self._get_unit(block_cfg.name)
+                    if unit in ['kW', 'kWh']:
+                        print(f"    • {block_cfg.name}: {size/1000:.1f} {unit} inherited")
+                    elif unit == 'vehicles':
+                        print(f"    • {block_cfg.name}: {int(size):,} {unit} inherited")
+                    else:
+                        print(f"    • {block_cfg.name}: {size:.0f} {unit} inherited")
+
+        # Special handling for grid g2s/s2g (bidirectional connections)
         if 'grid_size_g2s' in prev_results and prev_results['grid_size_g2s'] is not None:
-            grid_g2s = prev_results['grid_size_g2s']  # in W
+            grid_g2s = prev_results['grid_size_g2s']
             mask = (df['block'] == 'grid') & (df['key'] == 'size_g2s_existing')
-            df.loc[mask, column] = grid_g2s
-            print(f"  - Grid g2s existing: {grid_g2s/1000:.1f} kW (from previous stage)")
+            if mask.any():
+                df.loc[mask, column] = grid_g2s
+                print(f"    • grid (g2s): {grid_g2s/1000:.1f} kW inherited")
 
-        # Grid connection (s2g = system-to-grid, for export)
         if 'grid_size_s2g' in prev_results and prev_results['grid_size_s2g'] is not None:
-            grid_s2g = prev_results['grid_size_s2g']  # in W
+            grid_s2g = prev_results['grid_size_s2g']
             mask = (df['block'] == 'grid') & (df['key'] == 'size_s2g_existing')
-            df.loc[mask, column] = grid_s2g
-            print(f"  - Grid s2g existing: {grid_s2g/1000:.1f} kW (from previous stage)")
-
-        # Note: For BEV chargers, existing fleet typically stays
-        # You might want to add fleet growth logic here
+            if mask.any():
+                df.loc[mask, column] = grid_s2g
+                print(f"    • grid (s2g): {grid_s2g/1000:.1f} kW inherited")
 
         return df
 
@@ -179,35 +222,51 @@ class ScenarioBuilder:
         """
         Update technology costs based on stage year.
 
-        Implements exponential cost decline curves:
-        - PV: 5% annual decline
-        - ESS: 8% annual decline
+        Generic implementation - loops over technology costs from config.
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario DataFrame
+        stage_year : int
+            Year of this stage
+        column : str
+            Column to update
+
+        Returns:
+        --------
+        DataFrame : Updated scenario
         """
-        base_year = 2025
+        base_year = self.config.tech_costs[list(self.config.tech_costs.keys())[0]].base_year
         years_elapsed = stage_year - base_year
 
         if years_elapsed > 0:
-            # PV: 5% annual decline
-            pv_decline_rate = 0.05
-            pv_mask = (df['block'] == 'pv') & (df['key'] == 'capex_spec')
-            if pv_mask.any():
-                pv_cost_base = df.loc[pv_mask, column].values[0]
-                if pd.notna(pv_cost_base) and pv_cost_base != '' and pv_cost_base != 'None':
-                    pv_cost_base = float(pv_cost_base)
-                    pv_cost_new = pv_cost_base * ((1 - pv_decline_rate) ** years_elapsed)
-                    df.loc[pv_mask, column] = pv_cost_new
-                    print(f"  - PV cost: ${pv_cost_base:.2f}/W → ${pv_cost_new:.2f}/W ({-pv_decline_rate*100:.0f}%/yr)")
+            for tech_name, cost_config in self.config.tech_costs.items():
+                # Calculate new cost
+                new_cost = cost_config.get_cost(stage_year)
 
-            # ESS: 8% annual decline
-            ess_decline_rate = 0.08
-            ess_mask = (df['block'] == 'ess') & (df['key'] == 'capex_spec')
-            if ess_mask.any():
-                ess_cost_base = df.loc[ess_mask, column].values[0]
-                if pd.notna(ess_cost_base) and ess_cost_base != '' and ess_cost_base != 'None':
-                    ess_cost_base = float(ess_cost_base)
-                    ess_cost_new = ess_cost_base * ((1 - ess_decline_rate) ** years_elapsed)
-                    df.loc[ess_mask, column] = ess_cost_new
-                    print(f"  - ESS cost: ${ess_cost_base:.3f}/Wh → ${ess_cost_new:.3f}/Wh ({-ess_decline_rate*100:.0f}%/yr)")
+                # Find matching blocks (pattern match: 'pv' matches 'pv', 'pv1', etc.)
+                matching_blocks = [b for b in self.config.investable_blocks
+                                 if tech_name in b.name]
+
+                for block_cfg in matching_blocks:
+                    mask = (df['block'] == block_cfg.name) & (df['key'] == block_cfg.cost_param)
+                    if mask.any():
+                        old_cost = df.loc[mask, column].values[0]
+                        if pd.notna(old_cost) and old_cost != '' and old_cost != 'None':
+                            old_cost = float(old_cost)
+                            df.loc[mask, column] = new_cost
+
+                            # Pretty printing
+                            decline_pct = -cost_config.annual_decline_rate * 100
+                            if 'pv' in tech_name:
+                                print(f"  - {tech_name.upper()} cost: ${old_cost:.2f}/W → "
+                                     f"${new_cost:.2f}/W ({decline_pct:.0f}%/yr)")
+                            elif 'ess' in tech_name:
+                                print(f"  - {tech_name.upper()} cost: ${old_cost:.3f}/Wh → "
+                                     f"${new_cost:.3f}/Wh ({decline_pct:.0f}%/yr)")
+                            else:
+                                print(f"  - {tech_name} cost: {old_cost:.3f} → {new_cost:.3f}")
 
         return df
 
@@ -220,38 +279,54 @@ class ScenarioBuilder:
         """
         Update demand/fleet size based on growth projections.
 
-        Implements 10% annual fleet growth:
-        - Scales demand profile proportionally
-        - Updates fleet size (number of vehicles)
-        - Updates annual consumption
+        Generic implementation - uses config for growth rate and base values.
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario DataFrame
+        stage_year : int
+            Year of this stage
+        column : str
+            Column to update
+
+        Returns:
+        --------
+        DataFrame : Updated scenario
         """
-        base_year = 2025
-        years_elapsed = stage_year - base_year
+        years_elapsed = stage_year - self.config.demand_base_year
 
         if years_elapsed > 0:
-            growth_rate = 0.10  # 10% annual growth
-            growth_factor = (1 + growth_rate) ** years_elapsed
+            growth_factor = (1 + self.config.demand_annual_growth_rate) ** years_elapsed
 
-            # Update fleet size (number of vehicles)
-            fleet_mask = (df['block'] == 'bev') & (df['key'] == 'size_existing')
-            if fleet_mask.any():
-                fleet_base = df.loc[fleet_mask, column].values[0]
-                if pd.notna(fleet_base) and fleet_base != '' and fleet_base != 'None':
-                    fleet_base = float(fleet_base)
-                    fleet_new = fleet_base * growth_factor
-                    df.loc[fleet_mask, column] = fleet_new
-                    print(f"  - Fleet size: {fleet_base:.0f} vehicles → {fleet_new:.0f} vehicles (+{growth_rate*100:.0f}%/yr)")
+            # Update each demand block based on config
+            for block_cfg in self.config.demand_blocks:
+                # Update fleet size if this block has size_param
+                if hasattr(block_cfg, 'size_param') and block_cfg.size_param:
+                    mask = (df['block'] == block_cfg.name) & (df['key'] == block_cfg.size_param)
+                    if mask.any():
+                        base_val = df.loc[mask, column].values[0]
+                        if pd.notna(base_val) and base_val != '' and base_val != 'None':
+                            base_val = float(base_val)
+                            new_val = base_val * growth_factor
+                            df.loc[mask, column] = new_val
 
-            # Update annual consumption (scales with fleet)
-            # NOTE: consumption_yrl is in 'dem' block, not 'bev' block
-            consumption_mask = (df['block'] == 'dem') & (df['key'] == 'consumption_yrl')
-            if consumption_mask.any():
-                consumption_base = df.loc[consumption_mask, column].values[0]
-                if pd.notna(consumption_base) and consumption_base != '' and consumption_base != 'None':
-                    consumption_base = float(consumption_base)
-                    consumption_new = consumption_base * growth_factor
-                    df.loc[consumption_mask, column] = consumption_new
-                    print(f"  - Annual consumption: {consumption_base/1e6:.1f} MWh → {consumption_new/1e6:.1f} MWh")
+                            if 'bev' in block_cfg.name:
+                                print(f"  - Fleet size: {base_val:.0f} vehicles → "
+                                     f"{new_val:.0f} vehicles "
+                                     f"(+{self.config.demand_annual_growth_rate*100:.0f}%/yr)")
+
+                # Update consumption if this block has consumption_param
+                if hasattr(block_cfg, 'consumption_param') and block_cfg.consumption_param:
+                    mask = (df['block'] == block_cfg.name) & (df['key'] == block_cfg.consumption_param)
+                    if mask.any():
+                        base_val = df.loc[mask, column].values[0]
+                        if pd.notna(base_val) and base_val != '' and base_val != 'None':
+                            base_val = float(base_val)
+                            new_val = base_val * growth_factor
+                            df.loc[mask, column] = new_val
+                            print(f"  - Annual consumption: {base_val/1e6:.2f} MWh → "
+                                 f"{new_val/1e6:.2f} MWh")
 
         return df
 
@@ -264,30 +339,39 @@ class ScenarioBuilder:
         """
         Update CO2 limits based on decarbonization pathway.
 
-        Implements linear tightening from 500 kg (2025) to 100 kg (2050).
-        Always applies the pathway, including for base year.
+        Uses config.calculate_co2_limit() method (supports multiple pathway types).
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario DataFrame
+        stage_year : int
+            Year of this stage
+        column : str
+            Column to update
+
+        Returns:
+        --------
+        DataFrame : Updated scenario
         """
-        base_year = 2025
-        target_year = 2050
-        years_elapsed = stage_year - base_year
+        # Calculate limit from config
+        co2_limit_new = self.config.calculate_co2_limit(stage_year)
 
-        # Linear decarbonization pathway (applies to ALL years including base)
-        co2_start = 500  # kg for 50-day simulation period
-        co2_end = 100    # kg for 50-day simulation period
-        co2_slope = (co2_end - co2_start) / (target_year - base_year)
-        co2_limit_new = co2_start + co2_slope * years_elapsed
-
-        # Update CO2 limit
+        # Update CO2 limit in scenario
         co2_mask = (df['block'] == 'scenario') & (df['key'] == 'co2_max')
         if co2_mask.any():
-            co2_limit_base = df.loc[co2_mask, column].values[0]
-            if pd.notna(co2_limit_base) and co2_limit_base != '' and co2_limit_base != 'None':
-                co2_limit_base = float(co2_limit_base)
+            co2_limit_old = df.loc[co2_mask, column].values[0]
+            if pd.notna(co2_limit_old) and co2_limit_old != '' and co2_limit_old != 'None':
+                co2_limit_old = float(co2_limit_old)
                 df.loc[co2_mask, column] = co2_limit_new
+
+                years_elapsed = stage_year - self.config.emissions_base_year
                 if years_elapsed > 0:
-                    print(f"  - CO2 limit: {co2_limit_base:.0f} kg → {co2_limit_new:.0f} kg (decarbonization pathway)")
+                    print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
+                         f"(decarbonization pathway)")
                 else:
-                    print(f"  - CO2 limit: {co2_limit_base:.0f} kg → {co2_limit_new:.0f} kg (pathway baseline)")
+                    print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
+                         f"(pathway baseline)")
 
         return df
 
