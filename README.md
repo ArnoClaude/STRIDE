@@ -79,104 +79,14 @@ If using **PyCharm/Jupyter**, configure the project interpreter to use `venv/bin
 - PyCharm: Settings → Project → Python Interpreter → Add Interpreter → Add Local Interpreter → Select `venv/bin/python3`
 - Jupyter: Ensure kernel uses venv Python (check with `import sys; print(sys.executable)`)
 
----
-
-## Project Structure
-
-```
-STRIDE/
-├── README.md                    # This file
-├── requirements.txt             # Python dependencies
-├── revoletion/                  # REVOL-E-TION submodule (DO NOT MODIFY)
-│   ├── revoletion/             # Core optimization framework
-│   │   ├── blocks.py           # Energy system components (PV, ESS, chargers)
-│   │   ├── constraints.py      # Custom constraints (incl. CO2 limits)
-│   │   ├── simulation.py       # Optimization execution
-│   │   └── ...
-│   ├── example/                # Example configurations
-│   │   ├── scenarios_example.csv
-│   │   └── settings.csv
-│   └── results/                # Optimization outputs
-├── multi_stage/                # STRIDE-specific code (IN DEVELOPMENT)
-│   ├── sequential_optimizer.py # Multi-stage wrapper
-│   ├── scenario_builder.py     # Technology cost projections
-│   └── results_parser.py       # Results aggregation
-└── notebooks/                  # Validation notebooks
-    ├── 01_test_co2_constraint.ipynb  # CO2 constraint verification
-    └── output/                 # Plots and exports
-```
-
----
-
-## Usage
-
-### Running REVOL-E-TION (Single-Stage)
-
-To run a basic single-stage optimization:
-
-```bash
-cd revoletion
-python -m revoletion.main \
-    --settings example/settings.csv \
-    --scenario example/scenarios_example.csv
-```
-
-Results will be saved to `revoletion/results/TIMESTAMP_scenarios_example/`.
-
-### Validation Notebooks
-
-Notebooks in `notebooks/` verify individual STRIDE components:
-
-- **`01_test_co2_constraint.ipynb`**: Validates CO2 emission constraint implementation across multiple emission limits
-
-To run notebooks:
-```bash
-jupyter notebook notebooks/01_test_co2_constraint.ipynb
-```
-
-**Note:** Ensure Jupyter is using the venv kernel (see Installation section).
-
-### Multi-Stage Optimization (In Development)
-
-The multi-stage optimizer is under active development:
-
-```bash
-python multi_stage/sequential_optimizer.py --config config.yaml
-```
-
----
-
-## CO2 Emission Constraints
-
-STRIDE extends REVOL-E-TION with optional CO2 emission limits. To use:
-
-1. **Set grid emission factor** in scenario CSV:
-   ```csv
-   block,key,scenario_name
-   grid,co2_spec_g2s,0.4
-   ```
-   Default: 0.4 kg CO2/kWh (German grid average)
-
-2. **Set CO2 budget** in scenario CSV:
-   ```csv
-   block,key,scenario_name
-   scenario,co2_max,10000
-   ```
-   Units: kg CO2 over simulation period. Use `None` or omit for unlimited.
-
-3. **Run optimization** as normal - the constraint is applied automatically.
-
-See `notebooks/01_test_co2_constraint.ipynb` for validation examples.
-
----
-
 ## Development Status
 
-- ✅ **Week 1-3**: REVOL-E-TION integration and understanding
-- ✅ **Week 3-4**: CO2 constraint implementation and validation
-- 🚧 **Week 4-7**: Multi-stage optimizer development (CURRENT)
-- 📅 **Week 8-12**: Case studies and sensitivity analysis
-- 📅 **Week 13-16**: Thesis writing
+- ✅ REVOL-E-TION integration and understanding
+- ✅ CO2 constraint implementation and validation
+- ✅ Multi-stage optimizer development
+- 🚧 Data collection (CURRENT)
+- 📅 Case studies and sensitivity analysis
+- 📅 Thesis writing
 
 ---
 
@@ -204,8 +114,8 @@ This project uses REVOL-E-TION as a submodule, which is licensed under [its own 
 
 **Arno Claude**
 Master's Student, Technical University of Munich
-Thesis Supervisor: [To be added]
-Email: [To be added]
+Thesis Supervisor: Anna Paper (anna.paper@tum.de)
+Email: arno.claude@googlemail.com
 
 ---
 
