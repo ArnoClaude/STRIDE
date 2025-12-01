@@ -79,6 +79,8 @@ If using **PyCharm/Jupyter**, configure the project interpreter to use `venv/bin
 - PyCharm: Settings → Project → Python Interpreter → Add Interpreter → Add Local Interpreter → Select `venv/bin/python3`
 - Jupyter: Ensure kernel uses venv Python (check with `import sys; print(sys.executable)`)
 
+---
+
 ## Development Status
 
 - ✅ REVOL-E-TION integration and understanding
@@ -116,7 +118,3 @@ This project uses REVOL-E-TION as a submodule, which is licensed under [its own 
 Master's Student, Technical University of Munich
 Thesis Supervisor: Anna Paper (anna.paper@tum.de)
 Email: arno.claude@googlemail.com
-
----
-
-*Last updated: November 2025*
