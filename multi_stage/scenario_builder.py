@@ -13,6 +13,7 @@ from typing import Dict, Optional
 import pandas as pd
 
 from .config_loader import MultiStageConfig
+from .utils import get_unit
 
 
 class ScenarioBuilder:
@@ -52,22 +53,6 @@ class ScenarioBuilder:
             if block_cfg.name not in existing_blocks:
                 raise ValueError(f"Required demand block '{block_cfg.name}' "
                                f"not found in template. Available: {existing_blocks}")
-
-    def _get_unit(self, block_name: str) -> str:
-        """
-        Get display unit for a block.
-
-        Returns unit string for pretty printing (kW, kWh, vehicles, etc.)
-        """
-        name_lower = block_name.lower()
-        if 'ess' in name_lower or 'batt' in name_lower or 'brs' in name_lower:
-            return 'kWh'
-        elif 'pv' in name_lower or 'wind' in name_lower or 'grid' in name_lower or 'gen' in name_lower:
-            return 'kW'
-        elif 'bev' in name_lower or 'icev' in name_lower:
-            return 'vehicles'
-        else:
-            return 'W'  # default power unit
 
     def create_stage_scenario(
         self,
@@ -188,7 +173,7 @@ class ScenarioBuilder:
                     df.loc[mask, column] = size
 
                     # Generic pretty printing using unit helper
-                    unit = self._get_unit(block_cfg.name)
+                    unit = get_unit(block_cfg.name)
                     if unit in ['kW', 'kWh']:
                         print(f"    • {block_cfg.name}: {size/1000:.1f} {unit} inherited")
                     elif unit == 'vehicles':

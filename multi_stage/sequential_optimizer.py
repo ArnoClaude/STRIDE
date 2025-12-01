@@ -19,6 +19,7 @@ from typing import Dict, Optional
 from .config_loader import MultiStageConfig
 from .scenario_builder import ScenarioBuilder
 from .results_parser import ResultsParser
+from .utils import get_unit
 
 
 class SequentialStageOptimizer:
@@ -85,22 +86,6 @@ class SequentialStageOptimizer:
         # ScenarioBuilder._validate_template() checks required blocks exist
 
         print(f"✓ Setup validation passed")
-
-    def _get_unit(self, block_name: str) -> str:
-        """
-        Get display unit for a block.
-
-        Returns unit string for pretty printing (kW, kWh, vehicles, etc.)
-        """
-        name_lower = block_name.lower()
-        if 'ess' in name_lower or 'batt' in name_lower or 'brs' in name_lower:
-            return 'kWh'
-        elif 'pv' in name_lower or 'wind' in name_lower or 'grid' in name_lower or 'gen' in name_lower:
-            return 'kW'
-        elif 'bev' in name_lower or 'icev' in name_lower:
-            return 'vehicles'
-        else:
-            return 'W'  # default power unit
 
     def optimize(self) -> Dict:
         """
@@ -302,7 +287,7 @@ class SequentialStageOptimizer:
             new = results.get(f'{block_cfg.name}_size_invest', 0) or 0
 
             if total > 0:
-                unit = self._get_unit(block_cfg.name)
+                unit = get_unit(block_cfg.name)
                 if unit in ['kW', 'kWh']:
                     print(f"  │  ├─ {block_cfg.name}: {total/1000:.1f} {unit} total")
                     if new > 0:
