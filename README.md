@@ -104,7 +104,7 @@ This project uses REVOL-E-TION as a submodule, which is licensed under [its own 
 
 ## References
 
-- **REVOL-E-TION**: https://github.com/tum-ens/revol-e-tion
+- **REVOL-E-TION**: https://github.com/TUMFTM/REVOL-E-TION
 - **oemof-solph**: https://github.com/oemof/oemof-solph
 - **Pyomo**: http://www.pyomo.org/
 
