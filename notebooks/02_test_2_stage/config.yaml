@@ -1,0 +1,9 @@
+# Notebook-specific config overrides for multi-stage optimization
+# These paths override the defaults in multi_stage/config/default.yaml
+
+revoletion:
+  settings_path: "notebooks/02_test_2_stage/scenarios/settings.csv"
+  results_base_dir: "notebooks/02_test_2_stage/results"
+
+output:
+  stage_scenarios_dir: "notebooks/02_test_2_stage/generated_scenarios"

@@ -274,10 +274,10 @@ class SequentialStageOptimizer:
 
         print(f"  ├─ Status: ✓ {results.get('status', 'unknown')}")
 
-        print(f"  ├─ NPV: ${results.get('npv', 0):,.0f}")
-        print(f"  ├─ NPV (discounted): ${results.get('npv_discounted', 0):,.0f}")
-        print(f"  ├─ CAPEX: ${results.get('capex_prj', 0):,.0f}")
-        print(f"  ├─ OPEX: ${results.get('opex_prj', 0):,.0f}")
+        print(f"  ├─ NPV: ${results.get('npv') or 0:,.0f}")
+        print(f"  ├─ NPV (discounted): ${results.get('npv_discounted') or 0:,.0f}")
+        print(f"  ├─ CAPEX: ${results.get('capex_prj') or 0:,.0f}")
+        print(f"  ├─ OPEX: ${results.get('opex_prj') or 0:,.0f}")
 
         # Generic investment display - loop over ALL investable blocks from config
         print(f"  ├─ Investments:")
