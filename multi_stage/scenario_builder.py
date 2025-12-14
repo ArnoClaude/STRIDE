@@ -128,6 +128,11 @@ class ScenarioBuilder:
         # 4. Update CO2 limits (decarbonization pathway)
         scenario_df = self._update_co2_limits(scenario_df, stage_year, scenario_column)
 
+        # 5. Set invest_max to prevent unbounded optimization
+        # This is critical for multi-stage: revoletion doesn't know about future stages,
+        # so we need reasonable bounds to prevent unrealistic investment in any single stage
+        scenario_df = self._update_invest_max(scenario_df, stage_year, scenario_column)
+
         # Save to output path
         scenario_df.to_csv(output_path, index=False)
         print(f"  ✓ Created scenario file: {output_path.name}")
@@ -357,6 +362,65 @@ class ScenarioBuilder:
                 else:
                     print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
                          f"(pathway baseline)")
+
+        return df
+
+    def _update_invest_max(
+        self,
+        df: pd.DataFrame,
+        stage_year: int,
+        column: str
+    ) -> pd.DataFrame:
+        """
+        Set invest_max to prevent unbounded optimization problems.
+
+        In multi-stage optimization, each revoletion run doesn't know about future stages.
+        Without invest_max, the optimizer may invest infinitely when compensate_sim_prj=True
+        makes investment costs appear relatively cheap compared to operational costs.
+
+        The invest_max is calculated based on expected stage energy demand to ensure
+        realistic investment levels while still allowing necessary capacity expansion.
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario DataFrame
+        stage_year : int
+            Year of this stage
+        column : str
+            Column to update
+
+        Returns:
+        --------
+        DataFrame : Updated scenario
+        """
+        # Calculate expected fleet size for this stage
+        fleet_size = self.config.calculate_fleet_size(stage_year)
+
+        # Estimate annual energy demand (kWh)
+        # Conservative estimate: 15,000 kWh/vehicle/year for BEV fleet
+        energy_per_vehicle_kwh = 15000
+        annual_energy_demand_kwh = fleet_size * energy_per_vehicle_kwh
+
+        # Calculate reasonable investment cap using config parameters
+        # This covers PV + ESS + grid upgrades while preventing runaway investment
+        investment_budget_per_kwh = self.config.invest_budget_per_kwh
+
+        # Scale by stage duration (longer stages need more investment headroom)
+        stage_years = self.config.stage_duration_years
+        invest_max = annual_energy_demand_kwh * investment_budget_per_kwh * stage_years
+
+        # Update invest_max in scenario
+        invest_mask = (df['block'] == 'scenario') & (df['key'] == 'invest_max')
+        if invest_mask.any():
+            old_val = df.loc[invest_mask, column].values[0]
+            df.loc[invest_mask, column] = invest_max
+            print(f"  - invest_max: {old_val} → ${invest_max:,.0f} "
+                  f"(based on {fleet_size} vehicles × {stage_years} years)")
+        else:
+            # If invest_max row doesn't exist, we should add it
+            # But for now, just warn - the template should include it
+            print(f"  ⚠ invest_max not found in template - optimizer may be unbounded!")
 
         return df
 

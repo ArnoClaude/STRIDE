@@ -72,6 +72,10 @@ class MultiStageConfig:
     stage_scenarios_dir: Path
     summary_output_dir: Path
 
+    # Investment constraints (prevents unbounded optimization)
+    # invest_budget_per_kwh: $ allowed per kWh of annual fleet energy demand
+    invest_budget_per_kwh: float = 3.0
+
     @classmethod
     def from_yaml(cls, config_path: Optional[str] = None,
                   default_config_path: Optional[str] = None) -> 'MultiStageConfig':
@@ -150,6 +154,10 @@ class MultiStageConfig:
             else:
                 return (repo_root / p).resolve()
 
+        # Get optional investment constraint parameters (with defaults)
+        economics_cfg = cfg.get('economics', {})
+        invest_budget_per_kwh = economics_cfg.get('invest_budget_per_kwh', 3.0)
+
         # Create config object
         config = cls(
             stages=cfg['stages']['years'],
@@ -164,6 +172,7 @@ class MultiStageConfig:
             emissions_final_year=cfg['emissions']['final_year'],
             emissions_final_limit_kg=cfg['emissions']['final_limit_kg'],
             wacc=cfg['economics']['wacc'],
+            invest_budget_per_kwh=invest_budget_per_kwh,
             investable_blocks=investable_blocks,
             demand_blocks=demand_blocks,
             revoletion_settings_path=resolve_path(cfg['revoletion']['settings_path']),
