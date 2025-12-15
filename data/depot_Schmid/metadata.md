@@ -1,1 +1,3 @@
-fleet_test_id:97
+freight_forwarder: 6
+name: Schmid
+num_vehicles: 84
