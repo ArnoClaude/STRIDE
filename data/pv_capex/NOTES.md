@@ -61,7 +61,6 @@ REVOL-E-TION parameter: `capex_spec` = **1.00 €/Wp**
 
 ## Notes
 
-- Previous REVOL-E-TION default: 0.5 $/Wp (~0.45 €/Wp) - **significantly outdated** (roughly half of current costs)
 - 0% VAT policy in Germany reduces effective cost for end customers
 - Costs include installation but not grid connection upgrades
 - kWp = kilowatt-peak (rated power under standard test conditions)

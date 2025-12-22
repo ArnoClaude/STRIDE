@@ -39,18 +39,56 @@ REVOL-E-TION parameter: `co2_spec_g2s` = **0.00035 kg CO2/Wh**
 
 ## Projection Trajectory (for multi-stage)
 
-**Note:** UBA does not provide future projections in this publication. The values below are derived from German climate policy targets (coal phase-out 2038, climate neutrality 2045).
+**⚠️ IMPORTANT: Future projections are NOT from verified sources with exact g/kWh values.**
 
-| Year | CO2 Factor (g/kWh) | Scale vs 2025 | Source/Notes |
-|------|-------------------|---------------|--------------|
-| 2025 | 350 | 1.00 | Extrapolated from UBA 2024 trend |
-| 2030 | 150 | 0.43 | German Climate Action Plan target |
-| 2035 | 80 | 0.23 | Interpolated |
-| 2040 | 40 | 0.11 | Near-zero target |
-| 2045 | 15 | 0.04 | Approaching net-zero |
-| 2050 | 5 | 0.01 | Net-zero electricity sector |
+The UBA publication only provides historical data up to 2024. No official German government source provides specific g/kWh emission factor projections for 2030-2050.
 
-**⚠️ Projection caveat:** The 2030-2050 values are policy targets, not verified projections from UBA. For thesis, cite German Klimaschutzplan or NEP scenarios.
+### What IS verified (from downloaded sources):
+
+#### 1. Renewables share 2024: 62.7%
+**Source:** Fraunhofer ISE, "German Net Power Generation in 2024", Press Release, 03.01.2025
+**File:** `sources/fraunhofer_ise_electricity_generation_2024.pdf`, **Page 1**
+> "In Germany, net public electricity generation from renewable energy sources reached a record share of **62.7 percent** in 2024."
+
+#### 2. Target: 80% renewables by 2030
+**Source:** Clean Energy Wire factsheet
+**File:** `sources/cleanenergywire_ghg_targets.html`
+> "Germany now aims to bring the renewables share in power consumption to **80 percent by 2030**"
+
+#### 3. Target: 65% GHG reduction by 2030, 88% by 2040, net-zero by 2045
+**Source:** Clean Energy Wire factsheet
+**File:** `sources/cleanenergywire_ghg_targets.html`
+> "neutrality by 2045. It has set interim targets of cutting emissions by at least **65 percent by 2030** and **88 percent by 2040** compared to 1990 levels."
+
+#### 4. Coal phase-out: 2038 (ideally 2030)
+**Source:** Clean Energy Wire factsheet
+**File:** `sources/cleanenergywire_ghg_targets.html`
+> "Germany has passed legislation (in 2020) to end coal-fired power generation by **2038** at the latest [...] The government said 'ideally' it wants to pull forward the coal exit from 2038 to **2030**."
+
+### Estimated emission factors (USE WITH CAUTION):
+
+**⚠️ No source found with exact g/kWh projections for 2030-2045.**
+
+| Year | CO2 Factor (g/kWh) | Source | Confidence |
+|------|-------------------|--------|------------|
+| 2024 | 363 | UBA Strommix, Page 21, exact quote | ✅ **Verified** |
+| 2025 | ~350 | Extrapolated from 2024 trend | ⚠️ Estimate |
+| 2030 | 90-200 | No PDF source; derived from 80% renewables target | ❌ **Not verified** |
+| 2040 | 20-50 | No PDF source; derived from 88% GHG reduction | ❌ **Not verified** |
+| 2045 | ~0-10 | No PDF source; derived from net-zero target | ❌ **Not verified** |
+
+**Calculation basis for 2030 estimate:**
+- If 80% renewables (0 g/kWh) + 20% gas (~400 g/kWh) → ~80 g/kWh average
+- Range 90-200 accounts for uncertainty in gas share and imports
+
+**Sources consulted (none had explicit g/kWh projections):**
+- Agora Energiewende 2024 Presentation → MtCO2 emissions, not g/kWh
+- dena-Leitstudie Summary → TWh generation mix, not g/kWh
+- EEA Emission Intensity → EU-wide, no Germany-specific forecast
+
+### Removed speculative values
+
+The previous table with exact values (150, 80, 40, 15, 5 g/kWh) has been removed as these were not backed by downloadable, verifiable sources with exact quotes.
 
 ---
 
@@ -80,5 +118,21 @@ This confirms the declining trend in absolute emissions, consistent with the UBA
 
 | File | Description |
 |------|-------------|
-| `sources/uba_strommix_emissionen_1990_2024.pdf` | Primary source for emission factors |
-| `sources/fraunhofer_ise_electricity_generation_2024.pdf` | Supplementary source confirming trends |
+| `sources/uba_strommix_emissionen_1990_2024.pdf` | **Primary** - Emission factors 1990-2024 (verified) |
+| `sources/fraunhofer_ise_electricity_generation_2024.pdf` | Absolute CO2 trends, renewables share |
+| `sources/agora_energiewende_2024_presentation.pdf` | Sector emissions, no g/kWh projections |
+| `sources/dena_leitstudie_summary_en.pdf` | Scenario study, electricity mix but no g/kWh |
+| `sources/cleanenergywire_ghg_targets.html` | Policy targets (% reduction, renewables share) |
+| `sources/bmwk_electricity_2030.pdf` | BMWK policy paper (no specific g/kWh) |
+| `sources/eea_emission_intensity.html` | EU context, no Germany-specific projections |
+
+## Conclusion
+
+**Bottom line:** There is no single authoritative German source with a PDF table showing "2030: X g/kWh, 2040: Y g/kWh". 
+
+The projection must be constructed from:
+1. Verified 2024 value: **363 g/kWh** (UBA)
+2. Policy targets: 80% renewables by 2030, net-zero by 2045
+3. Reasonable estimates: 90-200 g/kWh for 2030, near-zero by 2045
+
+For the thesis, acknowledge this uncertainty explicitly.

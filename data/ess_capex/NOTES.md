@@ -59,8 +59,6 @@ REVOL-E-TION parameter: `capex_spec` = **0.50 €/Wh**
 
 ## Notes
 
-- Previous REVOL-E-TION default: 0.25 $/Wh (~230 €/kWh) - **lower than current Fraunhofer data**
-- Fraunhofer uses higher costs than BNEF global averages (Europe ~18% more expensive)
 - LFP (Lithium Iron Phosphate) is standard for stationary storage
 - Costs include installation (inklusive Installation)
 - Battery lifetime: 15 years (Page 12: "Die Lebensdauer für Batteriespeicher wurde mit 15 Jahren angesetzt")
