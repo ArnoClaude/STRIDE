@@ -41,6 +41,3 @@ Thumbs.db
 # Project-specific outputs
 results/
 *.log
-
-# Data folder (raw data, processed outputs - never push to remote)
-data/
