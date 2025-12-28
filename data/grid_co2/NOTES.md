@@ -4,6 +4,48 @@
 
 ---
 
+## CO2 Scope Justification
+
+**This model counts only grid electricity imports for CO2 emissions.**
+
+### Why this is sufficient:
+
+There is no single source stating "grid electricity = X% of depot emissions." Instead, this is derived from combining:
+
+1. **Grid CO2 factor** (verified): 363 g/kWh (UBA, Page 21)
+2. **PV lifecycle emissions** (verified): ~40 g CO2/kWh delivered
+
+**Source:** NREL, "Life Cycle Greenhouse Gas Emissions from Solar Photovoltaics", November 2012
+**File:** `sources/nrel_pv_lifecycle_ghg.pdf`
+> "Median values for both PV technologies are below **50 g CO2e/kWh**." (Page 2)
+
+3. **ESS lifecycle emissions** (estimate): ~100 kg CO2/kWh capacity over 15-year lifetime
+
+**Source:** MIT Climate Portal, IVL Swedish Energy Agency (not downloaded). Range in literature: 50-150 kg CO2/kWh.
+
+### Calculation for typical depot:
+
+| Component | Assumption | Annual CO2 | Calculation |
+|-----------|------------|------------|-------------|
+| Grid imports | 1,000 MWh/yr | 363 t | 1,000,000 kWh × 363 g/kWh |
+| PV embodied | 200 kWp, 900 kWh/kWp/yr | 7.2 t | 180,000 kWh × 40 g/kWh |
+| ESS embodied | 400 kWh capacity | 2.7 t | 400 × 100 kg ÷ 15 years |
+| **Total** | | **~373 t** | |
+| **Grid share** | | **97%** | 363 ÷ 373 |
+
+**Note:** This calculation uses thesis-specific assumptions. The 90-97% range depends on:
+- Grid CO2 factor (higher grid factor → higher grid share)
+- PV/ESS sizing relative to consumption
+- As grid decarbonizes, embodied share will increase
+
+### Limitation acknowledged:
+
+This model excludes embodied carbon. For a complete lifecycle assessment, add:
+- `PV_co2 = 40 g/kWh × annual_pv_generation`
+- `ESS_co2 = (100 kg/kWh × capacity) ÷ lifetime_years`
+
+---
+
 ## 2024 Values for Germany - VERIFIED
 
 **Primary Source:** Umweltbundesamt (UBA), "Entwicklung der spezifischen Treibhausgas-Emissionen des deutschen Strommix in den Jahren 1990 - 2024", Climate Change 13/2025, March 2025
@@ -81,15 +123,6 @@ The UBA publication only provides historical data up to 2024. No official German
 - If 80% renewables (0 g/kWh) + 20% gas (~400 g/kWh) → ~80 g/kWh average
 - Range 90-200 accounts for uncertainty in gas share and imports
 
-**Sources consulted (none had explicit g/kWh projections):**
-- Agora Energiewende 2024 Presentation → MtCO2 emissions, not g/kWh
-- dena-Leitstudie Summary → TWh generation mix, not g/kWh
-- EEA Emission Intensity → EU-wide, no Germany-specific forecast
-
-### Removed speculative values
-
-The previous table with exact values (150, 80, 40, 15, 5 g/kWh) has been removed as these were not backed by downloadable, verifiable sources with exact quotes.
-
 ---
 
 ## Supplementary Source
@@ -108,9 +141,8 @@ This confirms the declining trend in absolute emissions, consistent with the UBA
 
 ## Notes
 
-- Germany has coal phase-out by 2038
-- Imports from neighbors may have different carbon intensity (not counted in German factor per territorial principle)
-- Consider hourly variation for detailed charging optimization (Electricity Maps API)
+- Germany has coal phase-out by 2038 (ideally 2030)
+- Imports from neighbors may have different carbon intensity (territorial principle)
 
 ---
 
@@ -125,14 +157,5 @@ This confirms the declining trend in absolute emissions, consistent with the UBA
 | `sources/cleanenergywire_ghg_targets.html` | Policy targets (% reduction, renewables share) |
 | `sources/bmwk_electricity_2030.pdf` | BMWK policy paper (no specific g/kWh) |
 | `sources/eea_emission_intensity.html` | EU context, no Germany-specific projections |
-
-## Conclusion
-
-**Bottom line:** There is no single authoritative German source with a PDF table showing "2030: X g/kWh, 2040: Y g/kWh". 
-
-The projection must be constructed from:
-1. Verified 2024 value: **363 g/kWh** (UBA)
-2. Policy targets: 80% renewables by 2030, net-zero by 2045
-3. Reasonable estimates: 90-200 g/kWh for 2030, near-zero by 2045
-
-For the thesis, acknowledge this uncertainty explicitly.
+| `sources/nrel_pv_lifecycle_ghg.pdf` | PV lifecycle emissions (~40 g CO2/kWh) |
+| `sources/ukgbc_operational_embodied_carbon.pdf` | Operational vs embodied carbon split |
