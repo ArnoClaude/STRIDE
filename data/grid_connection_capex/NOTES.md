@@ -1,27 +1,50 @@
-# Grid Connection CAPEX
+# Grid Connection CAPEX (Baukostenzuschuss)
 
-> Status: 🔴 TODO
+> Last updated: 2025-12-30
 
 ---
 
-## Required Data
+## 2025 Values for Germany - VERIFIED
 
-Cost of upgrading grid connection for depot electrification.
+**Source:** ÜZ Mainfranken eG, "Preisblatt Baukostenzuschuss (Strom)", Gültigkeit ab 01.08.2025
+**File:** `sources/uez-bkz-2025.pdf`
+**URL:** https://www.uez.de/_Resources/Persistent/8/2/0/5/8205f6ef741e1925087a7324717d4b9890ba4606/Preisblatt%20Baukostenzuschuss%20Strom%2C%20g%C3%BCltig%20ab%2001.08.2025.pdf
 
-## From CSV:
-- Current value in REVOL-E-TION: 0.1 $/W
-- Source hint: https://www.bayernwerk-netz.de/content/dam/revu-global/bayernwerk-netz/files/energie-anschliessen/anschluss-mittel-und-hochspannung/20221209-bayernwerk-baukostenzuschuss.pdf
+### From Page 1:
 
-## Components to research:
-- Transformer costs (upgrading from 100 kW to 500 kW)
-- Cabling/infrastructure (medium-voltage cables, switchgear, metering)
-- Utility connection fees (Netzanschlusskosten)
-- Construction work (trenching, installation, permits)
+| Netzebene | Calculation | BKZ (EUR/kW) |
+|-----------|-------------|--------------|
+| NE4 (Umspannung HS/MS) | 124.00 × 0.79 | **98.75** |
+| **NE5 (Mittelspannung)** | 152.25 × 0.65 | **98.96** |
+| NE6 (Umspannung MS/NS) | 169.80 × 0.62 | **105.28** |
+| NE7 (Niederspannung) | - | **121.00** |
 
-## Priority: Medium
-Grid upgrade timing depends heavily on this cost.
+### Exact quote (Page 1, Section 2):
+> "Für 2025 ergibt sich ein BKZ in der Netzebene 5 von 152,25 EUR/kW * 0,65 = 98,96 EUR/kW."
+
+---
+
+## Recommended Value for STRIDE
+
+**Medium voltage grid connection (Netzebene 5): 98.96 EUR/kW**
+
+REVOL-E-TION parameter: `grid.capex_spec` = **0.09896 EUR/W**
+
+---
+
+## Notes
+
+- BKZ = Baukostenzuschuss (construction cost subsidy)
+- One-time fee paid to utility for upstream grid reinforcement
+- Based on contracted capacity (kW), not energy consumption
+- Does not include customer's own installation costs (transformer, cabling within property)
+- Values are net; add 19% VAT for gross prices
+- For EV charging (steuerbare Verbrauchseinrichtungen): 20% reduction per BNetzA BK8-22/010-A
+
+---
 
 ## Sources
+
 | File | Description |
 |------|-------------|
-| - | - |
+| `sources/uez-bkz-2025.pdf` | ÜZ Mainfranken official price sheet, valid from 01.08.2025 |

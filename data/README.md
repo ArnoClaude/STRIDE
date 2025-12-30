@@ -1,6 +1,6 @@
 # STRIDE Data Directory
 
-> Last synced with Data Collection II.csv: 2025-12-28
+> Last synced with Data Collection II.csv: 2025-12-30
 
 ---
 
@@ -16,14 +16,14 @@
 | `pv_capex/` | PV costs + projections | ✅ Complete | - |
 | `ess_capex/` | Battery costs + projections | ✅ Complete | - |
 | `grid_co2/` | Grid CO2 factors | ✅ Complete | - |
-| `grid_connection_capex/` | Grid upgrade costs | 🔴 TODO | Medium |
-| `charger_capex/` | Charger costs | 🔴 TODO | Medium |
-| `peak_demand_charges/` | Leistungspreis (€/kW/a) | 🔴 TODO | Medium |
+| `grid_connection_capex/` | Grid upgrade costs | ✅ Complete | - |
+| `charger_capex/` | Charger costs | ✅ Complete | - |
+| `peak_demand_charges/` | Leistungspreis (€/kW/a) | ✅ Complete | - |
+| `financial_params/` | Discount rate, lifespans | ✅ Complete | - |
 | `fixed_demand/` | Depot base load | 🔴 TODO (waiting depot) | HIGH |
 | `depot_locations/` | Lat/lon coordinates | 🔴 TODO (waiting depot) | Medium |
 | `physical_constraints/` | Roof area, space limits | 🔴 TODO (waiting depot) | Medium |
-| `financial_params/` | Discount rate, lifespans | 🔴 TODO | Medium |
-| `co2_pathway/` | CO2 reduction targets | 🔴 TODO | Medium |
+| `co2_pathway/` | CO2 reduction targets | 🔴 TODO | Low |
 
 ---
 
