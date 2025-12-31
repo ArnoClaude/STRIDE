@@ -1,6 +1,16 @@
 # STRIDE Data Directory
 
-> Last synced with Data Collection II.csv: 2025-12-30
+> Last updated: 2025-12-31
+
+---
+
+## Current Status
+
+**Phase 2 COMPLETE**: Single-stage REVOL-E-TION test run successful with Schmid data (84 vehicles).
+
+**Next**: Phase 3 - Two-stage multi-stage test
+
+See `.claude/plans/schmid_multi_stage.md` for detailed execution plan.
 
 ---
 
@@ -20,10 +30,39 @@
 | `charger_capex/` | Charger costs | ✅ Complete | - |
 | `peak_demand_charges/` | Leistungspreis (€/kW/a) | ✅ Complete | - |
 | `financial_params/` | Discount rate, lifespans | ✅ Complete | - |
-| `fixed_demand/` | Depot base load | 🔴 TODO (waiting depot) | HIGH |
-| `depot_locations/` | Lat/lon coordinates | 🔴 TODO (waiting depot) | Medium |
-| `physical_constraints/` | Roof area, space limits | 🔴 TODO (waiting depot) | Medium |
+| `fixed_demand/` | Depot base load | ✅ Using Franziska's data | - |
+| `depot_locations/` | Lat/lon coordinates | ✅ Augsburg (Schmid) | - |
+| `physical_constraints/` | Roof area, space limits | ⏭️ Skipped (not binding) | Low |
 | `co2_pathway/` | CO2 reduction targets | 🔴 TODO | Low |
+
+---
+
+## REVOL-E-TION Input Files
+
+Ready-to-use input files in `revoletion/example_schmid/`:
+
+| File | Description | Status |
+|------|-------------|--------|
+| `bev_log_test.csv` | 84 vehicles, 50 days | ✅ |
+| `bev_log_prod.csv` | 84 vehicles, 150 days | ✅ |
+| `dem_timeseries_test.csv` | Fixed demand, 50 days | ✅ |
+| `dem_timeseries_prod.csv` | Fixed demand, 150 days | ✅ |
+| `scenarios_schmid_test.csv` | Full scenario config | ✅ |
+| `settings.csv` | REVOL-E-TION settings | ✅ |
+
+---
+
+## Test Run Results (2025-12-31)
+
+Single-stage test with 84 vehicles, 50 days:
+
+| Metric | Value |
+|--------|-------|
+| Runtime | 514s (~8.5 min) |
+| NPC | 29.7M EUR |
+| Renewable Share | 64.1% |
+| PV installed | 1,841 kW |
+| Grid capacity | 1,684 kW |
 
 ---
 
