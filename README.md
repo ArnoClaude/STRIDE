@@ -86,9 +86,71 @@ If using **PyCharm/Jupyter**, configure the project interpreter to use `venv/bin
 - ✅ REVOL-E-TION integration and understanding
 - ✅ CO2 constraint implementation and validation
 - ✅ Multi-stage optimizer development
-- 🚧 Data collection (CURRENT)
-- 📅 Case studies and sensitivity analysis
+- ✅ Visualization module
+- 🚧 Case studies and sensitivity analysis (CURRENT)
 - 📅 Thesis writing
+
+---
+
+## Usage
+
+### Running Multi-Stage Optimization
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Run 6-stage optimization (2025-2050)
+python3 -m multi_stage.main -c configs/schmid_6stage.yaml -s inputs/schmid/scenarios.csv
+```
+
+### Generating Visualizations
+
+```bash
+# Generate PNG + PDF plots (default)
+python3 -m multi_stage.visualize outputs/schmid_6stage
+
+# Generate only PNG
+python3 -m multi_stage.visualize outputs/schmid_6stage --png
+
+# Generate only PDF (vector graphics for thesis)
+python3 -m multi_stage.visualize outputs/schmid_6stage --pdf
+
+# Generate LaTeX/TikZ plots (requires tikzplotlib)
+python3 -m multi_stage.visualize outputs/schmid_6stage --latex
+
+# Generate all formats
+python3 -m multi_stage.visualize outputs/schmid_6stage --all
+
+# Custom output directory
+python3 -m multi_stage.visualize outputs/schmid_6stage --plot-dir figures/
+```
+
+**Available plots:**
+- `investment_timeline` - Stacked bar chart of new investments per stage
+- `cumulative_capacity` - Line chart of total PV/ESS capacity over time
+- `cost_breakdown` - CAPEX vs NPV per stage
+- `npv_waterfall` - Cumulative discounted NPV
+- `cost_decline` - Technology cost assumptions
+- `co2_compliance` - Emissions vs regulatory limits
+- `fleet_growth` - Fleet size evolution
+
+### Architecture Diagram
+
+A full-page TikZ diagram showing data flow between STRIDE and REVOL-E-TION is available:
+
+```bash
+# Compile with LaTeX
+cd multi_stage
+pdflatex architecture_diagram.tex
+```
+
+This diagram shows:
+- **Blue boxes**: STRIDE wrapper code (new)
+- **Green boxes**: REVOL-E-TION existing code
+- **Orange hatched boxes**: Modifications to REVOL-E-TION (CO2 constraint, size_existing extensions)
+- **Arrows**: Control flow and data flow between components
+- **Loop**: Stage iteration with capacity carry-forward
 
 ---
 

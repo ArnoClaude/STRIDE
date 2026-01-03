@@ -1,0 +1,220 @@
+% STRIDE + REVOL-E-TION System Architecture Diagram
+% Compile with: pdflatex architecture_diagram.tex
+% Or include in thesis with \input{architecture_diagram.tex}
+
+\documentclass[border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, patterns}
+
+% Color definitions
+\definecolor{strideblue}{RGB}{41, 128, 185}      % STRIDE wrapper components
+\definecolor{revolgreen}{RGB}{39, 174, 96}       % REVOL-E-TION existing
+\definecolor{modifiedorange}{RGB}{230, 126, 34}  % Modifications to REVOL-E-TION
+\definecolor{dataflow}{RGB}{149, 165, 166}       % Data/file flow
+\definecolor{configyellow}{RGB}{241, 196, 15}    % Configuration files
+\definecolor{outputpurple}{RGB}{155, 89, 182}    % Output/results
+
+\begin{document}
+\begin{tikzpicture}[
+    % Node styles
+    stridemod/.style={
+        rectangle, rounded corners=3pt, draw=strideblue, fill=strideblue!15,
+        line width=1pt, minimum width=2.8cm, minimum height=0.9cm,
+        font=\small\sffamily, align=center
+    },
+    revolmod/.style={
+        rectangle, rounded corners=3pt, draw=revolgreen, fill=revolgreen!15,
+        line width=1pt, minimum width=2.8cm, minimum height=0.9cm,
+        font=\small\sffamily, align=center
+    },
+    modified/.style={
+        rectangle, rounded corners=3pt, draw=modifiedorange, fill=modifiedorange!15,
+        line width=1.5pt, minimum width=2.8cm, minimum height=0.9cm,
+        font=\small\sffamily, align=center,
+        pattern=north east lines, pattern color=modifiedorange!30
+    },
+    configfile/.style={
+        rectangle, draw=configyellow!80!black, fill=configyellow!30,
+        minimum width=2cm, minimum height=0.7cm,
+        font=\scriptsize\ttfamily, align=center
+    },
+    datafile/.style={
+        rectangle, draw=dataflow, fill=dataflow!20,
+        minimum width=2cm, minimum height=0.6cm,
+        font=\scriptsize\ttfamily, align=center
+    },
+    outputfile/.style={
+        rectangle, draw=outputpurple, fill=outputpurple!20,
+        minimum width=2.2cm, minimum height=0.6cm,
+        font=\scriptsize\ttfamily, align=center
+    },
+    groupbox/.style={
+        rectangle, rounded corners=5pt, draw=#1, line width=1.5pt,
+        fill=#1!5, inner sep=8pt
+    },
+    arrow/.style={
+        ->, >=Stealth, line width=0.8pt, draw=black!70
+    },
+    dataarrow/.style={
+        ->, >=Stealth, line width=0.6pt, draw=dataflow, dashed
+    },
+    looparrow/.style={
+        ->, >=Stealth, line width=1pt, draw=strideblue
+    }
+]
+
+% ============================================
+% STRIDE WRAPPER LAYER
+% ============================================
+
+% Config files (top left)
+\node[configfile] (yaml) at (0, 8) {config.yaml};
+\node[configfile, right=0.3cm of yaml] (scenarios) {scenarios.csv};
+\node[configfile, right=0.3cm of scenarios] (settings) {settings.csv};
+
+% STRIDE modules
+\node[stridemod] (configloader) at (0, 6.2) {config\_loader.py\\[-2pt]\scriptsize Load YAML};
+\node[stridemod, right=0.5cm of configloader] (seqopt) {sequential\_\\[-2pt]optimizer.py\\[-2pt]\scriptsize Stage loop};
+\node[stridemod, right=0.5cm of seqopt] (scenbuilder) {scenario\_\\[-2pt]builder.py\\[-2pt]\scriptsize Generate CSV};
+\node[stridemod, right=0.5cm of scenbuilder] (fleetscaler) {fleet\_scaler.py\\[-2pt]\scriptsize Scale fleet};
+
+% STRIDE group box
+\begin{scope}[on background layer]
+    \node[groupbox=strideblue, fit=(configloader)(seqopt)(scenbuilder)(fleetscaler)(yaml)(scenarios)(settings), 
+          label={[font=\sffamily\bfseries, text=strideblue]north:STRIDE Wrapper (New Code)}] (stridebox) {};
+\end{scope}
+
+% Stage state box (between STRIDE and REVOL-E-TION)
+\node[stridemod, minimum width=12cm, minimum height=1.2cm] (stagestate) at (5.5, 3.8) {
+    \textbf{Stage State} (carried between iterations)\\[-2pt]
+    \scriptsize pv\_existing\_kw \quad ess\_existing\_kwh \quad grid\_existing\_kw \quad year \quad co2\_limit
+};
+
+% ============================================
+% REVOL-E-TION LAYER
+% ============================================
+
+% Energy system blocks
+\node[revolmod] (pvsource) at (-1, 1.5) {PVSource\\[-2pt]\scriptsize Solar generation};
+\node[revolmod, right=0.4cm of pvsource] (ess) {Stationary\\[-2pt]EnergyStorage\\[-2pt]\scriptsize Battery};
+\node[revolmod, right=0.4cm of ess] (grid) {GridConnection\\[-2pt]\scriptsize Import/Export};
+\node[revolmod, right=0.4cm of grid] (vehicle) {Vehicle\\[-2pt]CommoditySystem\\[-2pt]\scriptsize EV Fleet};
+\node[revolmod, right=0.4cm of vehicle] (fixeddemand) {FixedDemand\\[-2pt]\scriptsize Building load};
+
+% Modified components (hatched pattern)
+\node[modified] (co2constraint) at (1.5, -0.3) {CO$_2$ Constraint\\[-2pt]\scriptsize \textit{Added to model}};
+\node[modified, right=0.8cm of co2constraint] (investblock) {InvestBlock\\[-2pt]\scriptsize size\_existing\\[-2pt]\scriptsize \textit{Extended}};
+
+% Core REVOL-E-TION components
+\node[revolmod, minimum width=4cm] (des) at (-0.5, -2) {Discrete Event Simulation\\[-2pt]\scriptsize Fleet behavior generation};
+\node[revolmod, minimum width=5cm] (milp) at (6, -2) {MILP Optimization\\[-2pt]\scriptsize oemof-solph / Pyomo\\[-2pt]\scriptsize min(CAPEX + OPEX - Revenue)};
+
+% Solver
+\node[revolmod, minimum width=3cm, fill=revolgreen!25] (solver) at (6, -3.8) {Solver (Gurobi/CBC)};
+
+% REVOL-E-TION group box
+\begin{scope}[on background layer]
+    \node[groupbox=revolgreen, fit=(pvsource)(ess)(grid)(vehicle)(fixeddemand)(co2constraint)(investblock)(des)(milp)(solver),
+          label={[font=\sffamily\bfseries, text=revolgreen]south:REVOL-E-TION (Existing + Modified)}] (revolbox) {};
+\end{scope}
+
+% ============================================
+% OUTPUT LAYER
+% ============================================
+
+\node[outputfile] (results) at (10, -2) {results.json};
+\node[outputfile, below=0.2cm of results] (timeline) {investment\_\\timeline.csv};
+
+% Results parser back to STRIDE
+\node[stridemod, minimum width=2.5cm] (resultsparser) at (10.5, 0.8) {results\_parser.py\\[-2pt]\scriptsize Extract capacities};
+
+% Visualize module
+\node[stridemod, minimum width=2.5cm] (visualize) at (10.5, -4.5) {visualize.py\\[-2pt]\scriptsize Generate plots};
+
+% Output plots
+\node[outputfile] (plots) at (10.5, -5.8) {plots/*.pdf};
+
+% ============================================
+% ARROWS - Data Flow
+% ============================================
+
+% Config to loader
+\draw[dataarrow] (yaml.south) -- ++(0,-0.3) -| (configloader.north);
+\draw[dataarrow] (scenarios.south) -- ++(0,-0.5) -| (scenbuilder.north);
+\draw[dataarrow] (settings.south) -- ++(0,-0.4) -| ($(scenbuilder.north)+(0.3,0)$);
+
+% STRIDE internal flow
+\draw[arrow] (configloader.east) -- (seqopt.west);
+\draw[arrow] (seqopt.east) -- (scenbuilder.west);
+\draw[arrow] (scenbuilder.east) -- (fleetscaler.west);
+
+% Sequential optimizer to stage state
+\draw[arrow] (seqopt.south) -- (stagestate.north);
+
+% Stage state to blocks (fan out)
+\draw[arrow] (stagestate.south) -- ++(0,-0.4) -| (pvsource.north);
+\draw[arrow] (stagestate.south) -- ++(0,-0.4) -| (ess.north);
+\draw[arrow] (stagestate.south) -- ++(0,-0.4) -| (grid.north);
+\draw[arrow] (stagestate.south) -- ++(0,-0.4) -| (vehicle.north);
+
+% Blocks to optimizer
+\draw[arrow] (pvsource.south) -- ++(0,-0.5) -| ($(milp.north)+(-1.5,0)$);
+\draw[arrow] (ess.south) -- ++(0,-0.7) -| ($(milp.north)+(-0.5,0)$);
+\draw[arrow] (grid.south) -- (investblock.north);
+\draw[arrow] (vehicle.south) -- ++(0,-0.4) -| (des.north);
+\draw[arrow] (fixeddemand.south) -- ++(0,-0.9) -| ($(milp.north)+(1.5,0)$);
+
+% InvestBlock and CO2 to optimizer
+\draw[arrow] (investblock.south) -- ++(0,-0.3) -| ($(milp.north)+(0.5,0)$);
+\draw[arrow] (co2constraint.south) -- ++(0,-0.5) -| ($(milp.north)+(-0.5,0)$);
+
+% DES to optimizer
+\draw[arrow] (des.east) -- (milp.west);
+
+% Optimizer to solver
+\draw[arrow] (milp.south) -- (solver.north);
+
+% Solver to results
+\draw[arrow] (solver.east) -| (results.south);
+\draw[dataarrow] (results.south) -- (timeline.north);
+
+% Results to parser
+\draw[arrow] (results.north) -- (resultsparser.south);
+
+% Parser back to stage state (the loop)
+\draw[looparrow, line width=1.2pt] (resultsparser.north) -- ++(0,0.5) -- ++(-4,0) 
+    node[midway, above, font=\scriptsize\sffamily, text=strideblue] {Update existing capacities} 
+    -- (stagestate.east);
+
+% Results to visualize
+\draw[dataarrow] (timeline.south) |- (visualize.west);
+\draw[arrow] (visualize.south) -- (plots.north);
+
+% ============================================
+% LEGEND
+% ============================================
+
+\node[anchor=north west] at (-2.5, -5) {
+    \begin{tikzpicture}[scale=0.8]
+        \node[stridemod, minimum width=1.8cm, minimum height=0.5cm] at (0,0) {\scriptsize STRIDE};
+        \node[anchor=west, font=\scriptsize\sffamily] at (1.1,0) {New wrapper code};
+        
+        \node[revolmod, minimum width=1.8cm, minimum height=0.5cm] at (0,-0.7) {\scriptsize REVOL-E-TION};
+        \node[anchor=west, font=\scriptsize\sffamily] at (1.1,-0.7) {Existing code};
+        
+        \node[modified, minimum width=1.8cm, minimum height=0.5cm] at (0,-1.4) {\scriptsize Modified};
+        \node[anchor=west, font=\scriptsize\sffamily] at (1.1,-1.4) {Extensions to existing};
+        
+        \draw[arrow] (4.5, 0) -- (5.3, 0);
+        \node[anchor=west, font=\scriptsize\sffamily] at (5.4,0) {Control flow};
+        
+        \draw[dataarrow] (4.5, -0.7) -- (5.3, -0.7);
+        \node[anchor=west, font=\scriptsize\sffamily] at (5.4,-0.7) {Data/file flow};
+        
+        \draw[looparrow, line width=1.2pt] (4.5, -1.4) -- (5.3, -1.4);
+        \node[anchor=west, font=\scriptsize\sffamily] at (5.4,-1.4) {Stage iteration loop};
+    \end{tikzpicture}
+};
+
+\end{tikzpicture}
+\end{document}

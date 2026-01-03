@@ -36,7 +36,7 @@ dem,load_profile,dem_timeseries_test
 dem,consumption_yrl,2585340.318586685
 dem,system,ac
 dem,crev_spec,0
-pv,size_existing,2294351.1877111406
+pv,size_existing,2294351.18771114
 pv,capex_existing,True
 pv,size_max,
 pv,invest,True
@@ -49,11 +49,11 @@ pv,opex_spec,0
 pv,ls,30
 pv,ccr,1
 pv,eff,0.95
-grid,size_g2s_existing,1397236.1923502448
+grid,size_g2s_existing,1397236.1923502455
 grid,capex_existing_g2s,True
 grid,size_g2s_max,
 grid,invest_g2s,True
-grid,size_s2g_existing,1397236.1923502448
+grid,size_s2g_existing,1397236.1923502455
 grid,capex_existing_s2g,True
 grid,size_s2g_max,equal
 grid,invest_s2g,equal
@@ -70,7 +70,7 @@ grid,res_only,False
 grid,opex_spec_g2s,grid_opex_g2s
 grid,opex_spec_s2g,grid_opex_s2g
 grid,co2_spec_g2s,0.4
-ess,size_existing,291.01922628559464
+ess,size_existing,291.0192262855946
 ess,capex_existing,True
 ess,size_max,
 ess,invest,True
