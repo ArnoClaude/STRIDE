@@ -72,9 +72,9 @@ class MultiStageConfig:
     stage_scenarios_dir: Path
     summary_output_dir: Path
 
-    # Investment constraints (prevents unbounded optimization)
-    # invest_budget_per_kwh: $ allowed per kWh of annual fleet energy demand
-    invest_budget_per_kwh: float = 3.0
+    # Fields with defaults must come last
+    demand_scale_bev_log: bool = True  # Whether to scale bev_log files for fleet growth
+    invest_budget_per_kwh: float = 3.0  # $ allowed per kWh of annual fleet energy demand
 
     @classmethod
     def from_yaml(cls, config_path: Optional[str] = None,
@@ -96,7 +96,16 @@ class MultiStageConfig:
         """
         # Load default config
         if default_config_path is None:
-            default_config_path = Path(__file__).parent / "config" / "default.yaml"
+            # Try new location first (configs/), then old location (multi_stage/config/)
+            repo_root = Path(__file__).parent.parent
+            new_path = repo_root / "configs" / "default.yaml"
+            old_path = Path(__file__).parent / "config" / "default.yaml"
+            if new_path.exists():
+                default_config_path = new_path
+            elif old_path.exists():
+                default_config_path = old_path
+            else:
+                raise FileNotFoundError(f"Default config not found at {new_path} or {old_path}")
 
         with open(default_config_path, 'r') as f:
             config_dict = yaml.safe_load(f)
@@ -158,6 +167,10 @@ class MultiStageConfig:
         economics_cfg = cfg.get('economics', {})
         invest_budget_per_kwh = economics_cfg.get('invest_budget_per_kwh', 3.0)
 
+        # Get demand configuration options
+        demand_cfg = cfg.get('demand', {})
+        scale_bev_log = demand_cfg.get('scale_bev_log', True)
+
         # Create config object
         config = cls(
             stages=cfg['stages']['years'],
@@ -166,6 +179,7 @@ class MultiStageConfig:
             demand_base_year=cfg['demand']['base_year'],
             demand_base_num_vehicles=cfg['demand']['base_num_vehicles'],
             demand_annual_growth_rate=cfg['demand']['annual_growth_rate'],
+            demand_scale_bev_log=scale_bev_log,
             emissions_pathway_type=cfg['emissions']['pathway_type'],
             emissions_base_year=cfg['emissions']['base_year'],
             emissions_base_limit_kg=cfg['emissions']['base_limit_kg'],
@@ -204,9 +218,9 @@ class MultiStageConfig:
                 raise ValueError(f"{tech_name} decline rate must be in [0, 1), "
                                f"got {tech_config.annual_decline_rate}")
 
-        # Check demand growth rate is positive
-        if self.demand_annual_growth_rate <= 0:
-            raise ValueError(f"Demand growth rate must be positive, "
+        # Check demand growth rate is non-negative
+        if self.demand_annual_growth_rate < 0:
+            raise ValueError(f"Demand growth rate must be non-negative, "
                            f"got {self.demand_annual_growth_rate}")
 
         # Check WACC is positive

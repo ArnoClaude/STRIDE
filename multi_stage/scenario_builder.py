@@ -6,13 +6,16 @@ Generates stage-specific scenario CSV files with:
 - Technology costs (for this stage year)
 - Demand projections (for this stage year)
 - CO2 limits (decarbonization pathway)
+- Scaled bev_log files for fleet growth
 """
 
+import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 import pandas as pd
 
 from .config_loader import MultiStageConfig
+from .fleet_scaler import scale_bev_log
 from .utils import get_unit
 
 
@@ -270,6 +273,7 @@ class ScenarioBuilder:
         Update demand/fleet size based on growth projections.
 
         Generic implementation - uses config for growth rate and base values.
+        Also handles bev_log scaling when fleet grows.
 
         Parameters:
         -----------
@@ -286,25 +290,31 @@ class ScenarioBuilder:
         """
         years_elapsed = stage_year - self.config.demand_base_year
 
-        if years_elapsed > 0:
+        if years_elapsed > 0 and self.config.demand_annual_growth_rate > 0:
             growth_factor = (1 + self.config.demand_annual_growth_rate) ** years_elapsed
 
             # Update each demand block based on config
             for block_cfg in self.config.demand_blocks:
-                # Update fleet size if this block has size_param
+                # Update fleet size if this block has size_param (bev,num)
                 if hasattr(block_cfg, 'size_param') and block_cfg.size_param:
                     mask = (df['block'] == block_cfg.name) & (df['key'] == block_cfg.size_param)
                     if mask.any():
                         base_val = df.loc[mask, column].values[0]
                         if pd.notna(base_val) and base_val != '' and base_val != 'None':
-                            base_val = float(base_val)
-                            new_val = base_val * growth_factor
+                            base_val = int(float(base_val))
+                            new_val = int(base_val * growth_factor)
                             df.loc[mask, column] = new_val
 
                             if 'bev' in block_cfg.name:
-                                print(f"  - Fleet size: {base_val:.0f} vehicles → "
-                                     f"{new_val:.0f} vehicles "
+                                print(f"  - Fleet size: {base_val} vehicles → "
+                                     f"{new_val} vehicles "
                                      f"(+{self.config.demand_annual_growth_rate*100:.0f}%/yr)")
+
+                                # Scale bev_log if enabled
+                                if self.config.demand_scale_bev_log and new_val > base_val:
+                                    df = self._scale_bev_log_for_stage(
+                                        df, column, stage_year, base_val, new_val
+                                    )
 
                 # Update consumption if this block has consumption_param
                 if hasattr(block_cfg, 'consumption_param') and block_cfg.consumption_param:
@@ -317,6 +327,81 @@ class ScenarioBuilder:
                             df.loc[mask, column] = new_val
                             print(f"  - Annual consumption: {base_val/1e6:.2f} MWh → "
                                  f"{new_val/1e6:.2f} MWh")
+
+        return df
+
+    def _scale_bev_log_for_stage(
+        self,
+        df: pd.DataFrame,
+        column: str,
+        stage_year: int,
+        base_vehicles: int,
+        target_vehicles: int
+    ) -> pd.DataFrame:
+        """
+        Create scaled bev_log file for this stage and update scenario.
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario DataFrame
+        column : str
+            Column to update
+        stage_year : int
+            Year of this stage
+        base_vehicles : int
+            Original number of vehicles
+        target_vehicles : int
+            Target number of vehicles after growth
+
+        Returns:
+        --------
+        DataFrame : Updated scenario with new bev_log filename
+        """
+        # Get current bev_log filename from scenario
+        filename_mask = (df['block'] == 'bev') & (df['key'] == 'filename')
+        if not filename_mask.any():
+            print(f"  ⚠️  No bev,filename found - skipping bev_log scaling")
+            return df
+
+        base_filename = df.loc[filename_mask, column].values[0]
+
+        # Determine paths
+        # Template is in inputs/schmid/, so bev_log should be there too
+        input_dir = self.template_path.parent
+        base_log_path = input_dir / f"{base_filename}.csv"
+
+        if not base_log_path.exists():
+            print(f"  ⚠️  Base bev_log not found: {base_log_path} - skipping scaling")
+            return df
+
+        # Create output filename and path
+        new_filename = f"bev_log_stage_{stage_year}"
+        output_path = self.config.stage_scenarios_dir / f"{new_filename}.csv"
+
+        # Scale the bev_log
+        print(f"  - Scaling bev_log for fleet growth:")
+        scale_bev_log(
+            base_log_path=base_log_path,
+            output_path=output_path,
+            base_vehicles=base_vehicles,
+            target_vehicles=target_vehicles,
+            seed=stage_year  # Use stage year as seed for reproducibility
+        )
+
+        # Update scenario to point to new bev_log
+        # Compute relative path from input_dir to stage_scenarios_dir
+        # Both are absolute paths from config_loader
+        try:
+            relative_path = os.path.relpath(
+                self.config.stage_scenarios_dir / new_filename,
+                input_dir
+            )
+        except ValueError:
+            # Fallback if on different drives (Windows)
+            relative_path = str(self.config.stage_scenarios_dir / new_filename)
+        
+        df.loc[filename_mask, column] = relative_path
 
         return df
 
@@ -347,21 +432,23 @@ class ScenarioBuilder:
         # Calculate limit from config
         co2_limit_new = self.config.calculate_co2_limit(stage_year)
 
+        # Skip if limit is very high (effectively disabled)
+        if co2_limit_new >= 999999999:
+            return df
+
         # Update CO2 limit in scenario
         co2_mask = (df['block'] == 'scenario') & (df['key'] == 'co2_max')
         if co2_mask.any():
             co2_limit_old = df.loc[co2_mask, column].values[0]
+            df.loc[co2_mask, column] = co2_limit_new
+
             if pd.notna(co2_limit_old) and co2_limit_old != '' and co2_limit_old != 'None':
                 co2_limit_old = float(co2_limit_old)
-                df.loc[co2_mask, column] = co2_limit_new
-
-                years_elapsed = stage_year - self.config.emissions_base_year
-                if years_elapsed > 0:
-                    print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
-                         f"(decarbonization pathway)")
-                else:
-                    print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
-                         f"(pathway baseline)")
+                print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
+                     f"(decarbonization pathway)")
+            else:
+                print(f"  - CO2 limit: None → {co2_limit_new:.0f} kg "
+                     f"(decarbonization pathway enabled)")
 
         return df
 

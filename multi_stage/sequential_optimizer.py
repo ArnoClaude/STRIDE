@@ -230,12 +230,13 @@ class SequentialStageOptimizer:
         print(f"  - Working dir: {working_dir}")
 
         # Run optimization
+        # Timeout: 20 minutes per stage (scaled fleets take longer)
         result = subprocess.run(
             cmd,
             cwd=str(working_dir),
             capture_output=True,
             text=True,
-            timeout=600  # 10 minute timeout
+            timeout=1200  # 20 minute timeout
         )
 
         if result.returncode != 0:
