@@ -154,6 +154,48 @@ This diagram shows:
 
 ---
 
+## Folder Structure
+
+```
+STRIDE/
+├── configs/                    # YAML configuration files for multi-stage runs
+│   └── schmid_6stage.yaml     # Main 6-stage config (2025-2050)
+├── data/                       # Research data and source documents
+│   ├── grid_co2/              # CO2 emission factors + sources
+│   ├── pv_capex/              # PV cost projections + sources
+│   ├── ess_capex/             # Battery cost projections + sources
+│   ├── financial_params/      # WACC, discount rates + sources
+│   ├── depot_Schmid/          # Case study data (Schmid depot)
+│   └── .../                   # Other data categories
+├── inputs/                     # Scenario input files for REVOL-E-TION
+│   └── schmid/                # Schmid depot scenario
+│       ├── scenarios.csv      # Main scenario parameters
+│       ├── settings.csv       # REVOL-E-TION settings
+│       ├── bev_log.csv        # Vehicle charging logs
+│       └── *.csv              # Timeseries data
+├── multi_stage/               # STRIDE multi-stage wrapper code
+│   ├── main.py               # CLI entry point
+│   ├── sequential_optimizer.py
+│   ├── scenario_builder.py
+│   ├── results_parser.py
+│   ├── visualize.py          # Thesis-quality plotting
+│   └── config_loader.py
+├── revoletion/                # REVOL-E-TION submodule (modified)
+│   ├── revoletion/           # Core optimization code
+│   │   ├── blocks.py         # Energy system components
+│   │   ├── constraints.py    # CO2 constraint (added)
+│   │   └── simulation.py     # Main simulation loop
+│   └── example/              # Reference examples
+├── outputs/                   # Generated results (gitignored)
+│   └── schmid_6stage/        # Multi-stage run output
+│       ├── stages/           # Per-stage scenario CSVs
+│       ├── plots/            # Generated visualizations
+│       └── *.json, *.csv     # Aggregated results
+└── notebooks/                 # Development/testing notebooks
+```
+
+---
+
 ## Contributing
 
 This is a thesis project and is not currently accepting external contributions. For questions or collaboration inquiries, please contact the author.

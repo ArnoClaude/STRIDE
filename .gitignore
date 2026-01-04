@@ -1,5 +1,5 @@
 # Claude Code
-/.claude
+/.claude/
 /CLAUDE.md
 
 # Python
@@ -12,6 +12,7 @@ venv/
 *.egg-info/
 dist/
 build/
+.eggs/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -24,20 +25,38 @@ build/
 *.swo
 *~
 
-# Test outputs (regenerable)
-multi_stage/results/
-multi_stage/test_output_*/
-multi_stage/generated_scenarios/
-
-# Notebook outputs (all regenerable)
-notebooks/01_test_co2_constraint/output/
-notebooks/02_test_2_stage/output/
-notebooks/*/output/
-
 # OS
 .DS_Store
 Thumbs.db
 
-# Project-specific outputs
-results/
+# =============================================================================
+# PROJECT-SPECIFIC: Outputs (regenerable from code + inputs)
+# =============================================================================
+
+# STRIDE multi-stage outputs (2.5GB+)
+outputs/
+
+# REVOL-E-TION results (5.4GB+)
+revoletion/results/
+
+# Notebook test outputs
+notebooks/*/output/
+notebooks/*/.ipynb_checkpoints/
+
+# Temporary/test scenarios
+multi_stage/results/
+multi_stage/test_output_*/
+multi_stage/generated_scenarios/
+
+# Logs
 *.log
+
+# =============================================================================
+# KEEP IN VERSION CONTROL
+# =============================================================================
+# - configs/ (scenario definitions)
+# - inputs/ (scenario CSVs, timeseries, bev_logs) 
+# - data/ (research notes, source PDFs)
+# - multi_stage/ (STRIDE code)
+# - revoletion/revoletion/ (modified REVOL-E-TION core)
+# - revoletion/example/ (reference examples)
