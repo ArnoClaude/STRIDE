@@ -1,0 +1,1139 @@
+digraph {
+	Bus [color=red fontsize=10 shape=rectangle]
+	Sink [fontsize=10 shape=trapezium]
+	Source [fontsize=10 shape=invtrapezium]
+	Storage [color=green fontsize=10 shape=rectangle style=dashed]
+	ac_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	dc_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	ac_dc [fontsize=10 shape=rectangle]
+	dc_ac [fontsize=10 shape=rectangle]
+	dem_snk [fontsize=10 shape=trapezium]
+	grid_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	xc_grid [fontsize=10 shape=rectangle]
+	grid_xc_sim_duration [fontsize=10 shape=rectangle]
+	grid_market_src [fontsize=10 shape=invtrapezium]
+	grid_market_snk [fontsize=10 shape=trapezium]
+	pv_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	pv_out [fontsize=10 shape=rectangle]
+	pv_exc [fontsize=10 shape=trapezium]
+	pv_src [fontsize=10 shape=invtrapezium]
+	ess_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	xc_ess [fontsize=10 shape=rectangle]
+	ess_xc [fontsize=10 shape=rectangle]
+	ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	xc_bev [fontsize=10 shape=rectangle]
+	bev_xc [fontsize=10 shape=rectangle]
+	bev_0_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_0 [fontsize=10 shape=rectangle]
+	bev_0_mc [fontsize=10 shape=rectangle]
+	bev_0_snk [fontsize=10 shape=trapezium]
+	bev_0_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_0_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_0_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_0_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_0_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_0_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_0_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_1_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_1 [fontsize=10 shape=rectangle]
+	bev_1_mc [fontsize=10 shape=rectangle]
+	bev_1_snk [fontsize=10 shape=trapezium]
+	bev_1_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_1_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_1_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_1_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_1_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_1_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_1_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_2_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_2 [fontsize=10 shape=rectangle]
+	bev_2_mc [fontsize=10 shape=rectangle]
+	bev_2_snk [fontsize=10 shape=trapezium]
+	bev_2_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_2_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_2_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_2_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_2_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_2_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_2_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_3_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_3 [fontsize=10 shape=rectangle]
+	bev_3_mc [fontsize=10 shape=rectangle]
+	bev_3_snk [fontsize=10 shape=trapezium]
+	bev_3_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_3_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_3_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_3_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_3_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_3_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_3_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_4_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_4 [fontsize=10 shape=rectangle]
+	bev_4_mc [fontsize=10 shape=rectangle]
+	bev_4_snk [fontsize=10 shape=trapezium]
+	bev_4_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_4_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_4_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_4_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_4_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_4_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_4_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_5_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_5 [fontsize=10 shape=rectangle]
+	bev_5_mc [fontsize=10 shape=rectangle]
+	bev_5_snk [fontsize=10 shape=trapezium]
+	bev_5_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_5_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_5_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_5_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_5_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_5_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_5_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_6_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_6 [fontsize=10 shape=rectangle]
+	bev_6_mc [fontsize=10 shape=rectangle]
+	bev_6_snk [fontsize=10 shape=trapezium]
+	bev_6_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_6_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_6_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_6_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_6_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_6_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_6_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_7_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_7 [fontsize=10 shape=rectangle]
+	bev_7_mc [fontsize=10 shape=rectangle]
+	bev_7_snk [fontsize=10 shape=trapezium]
+	bev_7_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_7_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_7_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_7_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_7_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_7_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_7_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_8_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_8 [fontsize=10 shape=rectangle]
+	bev_8_mc [fontsize=10 shape=rectangle]
+	bev_8_snk [fontsize=10 shape=trapezium]
+	bev_8_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_8_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_8_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_8_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_8_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_8_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_8_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_9_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_9 [fontsize=10 shape=rectangle]
+	bev_9_mc [fontsize=10 shape=rectangle]
+	bev_9_snk [fontsize=10 shape=trapezium]
+	bev_9_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_9_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_9_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_9_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_9_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_9_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_9_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_10_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_10 [fontsize=10 shape=rectangle]
+	bev_10_mc [fontsize=10 shape=rectangle]
+	bev_10_snk [fontsize=10 shape=trapezium]
+	bev_10_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_10_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_10_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_10_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_10_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_10_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_10_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_11_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_11 [fontsize=10 shape=rectangle]
+	bev_11_mc [fontsize=10 shape=rectangle]
+	bev_11_snk [fontsize=10 shape=trapezium]
+	bev_11_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_11_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_11_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_11_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_11_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_11_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_11_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_12_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_12 [fontsize=10 shape=rectangle]
+	bev_12_mc [fontsize=10 shape=rectangle]
+	bev_12_snk [fontsize=10 shape=trapezium]
+	bev_12_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_12_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_12_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_12_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_12_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_12_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_12_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_13_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_13 [fontsize=10 shape=rectangle]
+	bev_13_mc [fontsize=10 shape=rectangle]
+	bev_13_snk [fontsize=10 shape=trapezium]
+	bev_13_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_13_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_13_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_13_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_13_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_13_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_13_conv_ext_dc [fontsize=10 shape=rectangle]
+	bev_14_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_bev_14 [fontsize=10 shape=rectangle]
+	bev_14_mc [fontsize=10 shape=rectangle]
+	bev_14_snk [fontsize=10 shape=trapezium]
+	bev_14_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	bev_14_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_14_src_ext_ac [fontsize=10 shape=invtrapezium]
+	bev_14_conv_ext_ac [fontsize=10 shape=rectangle]
+	bev_14_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	bev_14_src_ext_dc [fontsize=10 shape=invtrapezium]
+	bev_14_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	xc_brs [fontsize=10 shape=rectangle]
+	brs_xc [fontsize=10 shape=rectangle]
+	brs_0_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_0 [fontsize=10 shape=rectangle]
+	brs_0_mc [fontsize=10 shape=rectangle]
+	brs_0_snk [fontsize=10 shape=trapezium]
+	brs_0_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_0_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_0_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_0_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_0_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_0_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_0_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_1_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_1 [fontsize=10 shape=rectangle]
+	brs_1_mc [fontsize=10 shape=rectangle]
+	brs_1_snk [fontsize=10 shape=trapezium]
+	brs_1_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_1_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_1_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_1_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_1_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_1_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_1_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_2_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_2 [fontsize=10 shape=rectangle]
+	brs_2_mc [fontsize=10 shape=rectangle]
+	brs_2_snk [fontsize=10 shape=trapezium]
+	brs_2_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_2_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_2_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_2_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_2_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_2_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_2_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_3_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_3 [fontsize=10 shape=rectangle]
+	brs_3_mc [fontsize=10 shape=rectangle]
+	brs_3_snk [fontsize=10 shape=trapezium]
+	brs_3_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_3_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_3_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_3_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_3_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_3_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_3_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_4_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_4 [fontsize=10 shape=rectangle]
+	brs_4_mc [fontsize=10 shape=rectangle]
+	brs_4_snk [fontsize=10 shape=trapezium]
+	brs_4_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_4_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_4_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_4_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_4_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_4_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_4_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_5_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_5 [fontsize=10 shape=rectangle]
+	brs_5_mc [fontsize=10 shape=rectangle]
+	brs_5_snk [fontsize=10 shape=trapezium]
+	brs_5_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_5_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_5_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_5_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_5_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_5_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_5_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_6_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_6 [fontsize=10 shape=rectangle]
+	brs_6_mc [fontsize=10 shape=rectangle]
+	brs_6_snk [fontsize=10 shape=trapezium]
+	brs_6_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_6_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_6_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_6_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_6_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_6_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_6_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_7_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_7 [fontsize=10 shape=rectangle]
+	brs_7_mc [fontsize=10 shape=rectangle]
+	brs_7_snk [fontsize=10 shape=trapezium]
+	brs_7_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_7_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_7_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_7_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_7_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_7_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_7_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_8_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_8 [fontsize=10 shape=rectangle]
+	brs_8_mc [fontsize=10 shape=rectangle]
+	brs_8_snk [fontsize=10 shape=trapezium]
+	brs_8_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_8_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_8_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_8_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_8_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_8_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_8_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_9_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_9 [fontsize=10 shape=rectangle]
+	brs_9_mc [fontsize=10 shape=rectangle]
+	brs_9_snk [fontsize=10 shape=trapezium]
+	brs_9_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_9_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_9_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_9_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_9_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_9_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_9_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_10_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_10 [fontsize=10 shape=rectangle]
+	brs_10_mc [fontsize=10 shape=rectangle]
+	brs_10_snk [fontsize=10 shape=trapezium]
+	brs_10_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_10_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_10_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_10_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_10_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_10_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_10_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_11_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_11 [fontsize=10 shape=rectangle]
+	brs_11_mc [fontsize=10 shape=rectangle]
+	brs_11_snk [fontsize=10 shape=trapezium]
+	brs_11_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_11_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_11_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_11_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_11_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_11_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_11_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_12_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_12 [fontsize=10 shape=rectangle]
+	brs_12_mc [fontsize=10 shape=rectangle]
+	brs_12_snk [fontsize=10 shape=trapezium]
+	brs_12_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_12_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_12_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_12_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_12_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_12_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_12_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_13_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_13 [fontsize=10 shape=rectangle]
+	brs_13_mc [fontsize=10 shape=rectangle]
+	brs_13_snk [fontsize=10 shape=trapezium]
+	brs_13_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_13_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_13_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_13_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_13_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_13_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_13_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_14_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_14 [fontsize=10 shape=rectangle]
+	brs_14_mc [fontsize=10 shape=rectangle]
+	brs_14_snk [fontsize=10 shape=trapezium]
+	brs_14_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_14_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_14_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_14_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_14_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_14_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_14_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_15_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_15 [fontsize=10 shape=rectangle]
+	brs_15_mc [fontsize=10 shape=rectangle]
+	brs_15_snk [fontsize=10 shape=trapezium]
+	brs_15_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_15_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_15_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_15_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_15_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_15_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_15_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_16_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_16 [fontsize=10 shape=rectangle]
+	brs_16_mc [fontsize=10 shape=rectangle]
+	brs_16_snk [fontsize=10 shape=trapezium]
+	brs_16_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_16_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_16_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_16_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_16_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_16_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_16_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_17_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_17 [fontsize=10 shape=rectangle]
+	brs_17_mc [fontsize=10 shape=rectangle]
+	brs_17_snk [fontsize=10 shape=trapezium]
+	brs_17_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_17_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_17_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_17_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_17_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_17_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_17_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_18_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_18 [fontsize=10 shape=rectangle]
+	brs_18_mc [fontsize=10 shape=rectangle]
+	brs_18_snk [fontsize=10 shape=trapezium]
+	brs_18_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_18_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_18_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_18_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_18_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_18_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_18_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_19_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_19 [fontsize=10 shape=rectangle]
+	brs_19_mc [fontsize=10 shape=rectangle]
+	brs_19_snk [fontsize=10 shape=trapezium]
+	brs_19_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_19_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_19_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_19_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_19_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_19_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_19_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_20_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_20 [fontsize=10 shape=rectangle]
+	brs_20_mc [fontsize=10 shape=rectangle]
+	brs_20_snk [fontsize=10 shape=trapezium]
+	brs_20_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_20_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_20_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_20_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_20_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_20_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_20_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_21_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_21 [fontsize=10 shape=rectangle]
+	brs_21_mc [fontsize=10 shape=rectangle]
+	brs_21_snk [fontsize=10 shape=trapezium]
+	brs_21_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_21_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_21_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_21_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_21_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_21_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_21_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_22_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_22 [fontsize=10 shape=rectangle]
+	brs_22_mc [fontsize=10 shape=rectangle]
+	brs_22_snk [fontsize=10 shape=trapezium]
+	brs_22_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_22_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_22_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_22_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_22_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_22_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_22_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_23_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_23 [fontsize=10 shape=rectangle]
+	brs_23_mc [fontsize=10 shape=rectangle]
+	brs_23_snk [fontsize=10 shape=trapezium]
+	brs_23_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_23_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_23_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_23_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_23_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_23_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_23_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_24_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_24 [fontsize=10 shape=rectangle]
+	brs_24_mc [fontsize=10 shape=rectangle]
+	brs_24_snk [fontsize=10 shape=trapezium]
+	brs_24_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_24_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_24_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_24_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_24_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_24_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_24_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_25_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_25 [fontsize=10 shape=rectangle]
+	brs_25_mc [fontsize=10 shape=rectangle]
+	brs_25_snk [fontsize=10 shape=trapezium]
+	brs_25_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_25_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_25_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_25_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_25_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_25_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_25_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_26_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_26 [fontsize=10 shape=rectangle]
+	brs_26_mc [fontsize=10 shape=rectangle]
+	brs_26_snk [fontsize=10 shape=trapezium]
+	brs_26_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_26_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_26_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_26_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_26_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_26_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_26_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_27_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_27 [fontsize=10 shape=rectangle]
+	brs_27_mc [fontsize=10 shape=rectangle]
+	brs_27_snk [fontsize=10 shape=trapezium]
+	brs_27_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_27_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_27_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_27_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_27_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_27_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_27_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_28_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_28 [fontsize=10 shape=rectangle]
+	brs_28_mc [fontsize=10 shape=rectangle]
+	brs_28_snk [fontsize=10 shape=trapezium]
+	brs_28_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_28_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_28_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_28_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_28_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_28_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_28_conv_ext_dc [fontsize=10 shape=rectangle]
+	brs_29_bus [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	mc_brs_29 [fontsize=10 shape=rectangle]
+	brs_29_mc [fontsize=10 shape=rectangle]
+	brs_29_snk [fontsize=10 shape=trapezium]
+	brs_29_ess [color=green fontsize=10 shape=rectangle style=dashed]
+	brs_29_bus_ext_ac [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_29_src_ext_ac [fontsize=10 shape=invtrapezium]
+	brs_29_conv_ext_ac [fontsize=10 shape=rectangle]
+	brs_29_bus_ext_dc [color=red fixedsize=shape fontsize=10 height=0.6 shape=rectangle width=2.4]
+	brs_29_src_ext_dc [fontsize=10 shape=invtrapezium]
+	brs_29_conv_ext_dc [fontsize=10 shape=rectangle]
+	grid_xc_sim_duration -> ac_bus
+	bev_xc -> ac_bus
+	brs_xc -> ac_bus
+	dc_ac -> ac_bus
+	ac_bus -> ac_dc
+	ac_bus -> dem_snk
+	ac_bus -> xc_grid
+	ac_bus -> xc_bev
+	ac_bus -> xc_brs
+	ess_xc -> dc_bus
+	ac_dc -> dc_bus
+	pv_out -> dc_bus
+	dc_bus -> dc_ac
+	dc_bus -> xc_ess
+	xc_grid -> grid_bus
+	grid_market_src -> grid_bus
+	grid_bus -> grid_xc_sim_duration
+	grid_bus -> grid_market_snk
+	pv_src -> pv_bus
+	pv_bus -> pv_out
+	pv_bus -> pv_exc
+	xc_ess -> ess_bus
+	ess -> ess_bus
+	ess_bus -> ess_xc
+	ess_bus -> ess
+	bev_13_mc -> bev_bus
+	bev_3_mc -> bev_bus
+	xc_bev -> bev_bus
+	bev_6_mc -> bev_bus
+	bev_7_mc -> bev_bus
+	bev_1_mc -> bev_bus
+	bev_0_mc -> bev_bus
+	bev_2_mc -> bev_bus
+	bev_4_mc -> bev_bus
+	bev_8_mc -> bev_bus
+	bev_9_mc -> bev_bus
+	bev_11_mc -> bev_bus
+	bev_12_mc -> bev_bus
+	bev_10_mc -> bev_bus
+	bev_14_mc -> bev_bus
+	bev_5_mc -> bev_bus
+	bev_bus -> bev_xc
+	bev_bus -> mc_bev_0
+	bev_bus -> mc_bev_1
+	bev_bus -> mc_bev_2
+	bev_bus -> mc_bev_3
+	bev_bus -> mc_bev_4
+	bev_bus -> mc_bev_5
+	bev_bus -> mc_bev_6
+	bev_bus -> mc_bev_7
+	bev_bus -> mc_bev_8
+	bev_bus -> mc_bev_9
+	bev_bus -> mc_bev_10
+	bev_bus -> mc_bev_11
+	bev_bus -> mc_bev_12
+	bev_bus -> mc_bev_13
+	bev_bus -> mc_bev_14
+	bev_0_ess -> bev_0_bus
+	bev_0_conv_ext_ac -> bev_0_bus
+	mc_bev_0 -> bev_0_bus
+	bev_0_conv_ext_dc -> bev_0_bus
+	bev_0_bus -> bev_0_mc
+	bev_0_bus -> bev_0_snk
+	bev_0_bus -> bev_0_ess
+	bev_0_src_ext_ac -> bev_0_bus_ext_ac
+	bev_0_bus_ext_ac -> bev_0_conv_ext_ac
+	bev_0_src_ext_dc -> bev_0_bus_ext_dc
+	bev_0_bus_ext_dc -> bev_0_conv_ext_dc
+	bev_1_ess -> bev_1_bus
+	mc_bev_1 -> bev_1_bus
+	bev_1_conv_ext_ac -> bev_1_bus
+	bev_1_conv_ext_dc -> bev_1_bus
+	bev_1_bus -> bev_1_mc
+	bev_1_bus -> bev_1_snk
+	bev_1_bus -> bev_1_ess
+	bev_1_src_ext_ac -> bev_1_bus_ext_ac
+	bev_1_bus_ext_ac -> bev_1_conv_ext_ac
+	bev_1_src_ext_dc -> bev_1_bus_ext_dc
+	bev_1_bus_ext_dc -> bev_1_conv_ext_dc
+	bev_2_conv_ext_dc -> bev_2_bus
+	bev_2_conv_ext_ac -> bev_2_bus
+	bev_2_ess -> bev_2_bus
+	mc_bev_2 -> bev_2_bus
+	bev_2_bus -> bev_2_mc
+	bev_2_bus -> bev_2_snk
+	bev_2_bus -> bev_2_ess
+	bev_2_src_ext_ac -> bev_2_bus_ext_ac
+	bev_2_bus_ext_ac -> bev_2_conv_ext_ac
+	bev_2_src_ext_dc -> bev_2_bus_ext_dc
+	bev_2_bus_ext_dc -> bev_2_conv_ext_dc
+	bev_3_ess -> bev_3_bus
+	bev_3_conv_ext_ac -> bev_3_bus
+	mc_bev_3 -> bev_3_bus
+	bev_3_conv_ext_dc -> bev_3_bus
+	bev_3_bus -> bev_3_mc
+	bev_3_bus -> bev_3_snk
+	bev_3_bus -> bev_3_ess
+	bev_3_src_ext_ac -> bev_3_bus_ext_ac
+	bev_3_bus_ext_ac -> bev_3_conv_ext_ac
+	bev_3_src_ext_dc -> bev_3_bus_ext_dc
+	bev_3_bus_ext_dc -> bev_3_conv_ext_dc
+	bev_4_ess -> bev_4_bus
+	bev_4_conv_ext_ac -> bev_4_bus
+	mc_bev_4 -> bev_4_bus
+	bev_4_conv_ext_dc -> bev_4_bus
+	bev_4_bus -> bev_4_mc
+	bev_4_bus -> bev_4_snk
+	bev_4_bus -> bev_4_ess
+	bev_4_src_ext_ac -> bev_4_bus_ext_ac
+	bev_4_bus_ext_ac -> bev_4_conv_ext_ac
+	bev_4_src_ext_dc -> bev_4_bus_ext_dc
+	bev_4_bus_ext_dc -> bev_4_conv_ext_dc
+	bev_5_conv_ext_ac -> bev_5_bus
+	mc_bev_5 -> bev_5_bus
+	bev_5_ess -> bev_5_bus
+	bev_5_conv_ext_dc -> bev_5_bus
+	bev_5_bus -> bev_5_mc
+	bev_5_bus -> bev_5_snk
+	bev_5_bus -> bev_5_ess
+	bev_5_src_ext_ac -> bev_5_bus_ext_ac
+	bev_5_bus_ext_ac -> bev_5_conv_ext_ac
+	bev_5_src_ext_dc -> bev_5_bus_ext_dc
+	bev_5_bus_ext_dc -> bev_5_conv_ext_dc
+	mc_bev_6 -> bev_6_bus
+	bev_6_conv_ext_ac -> bev_6_bus
+	bev_6_conv_ext_dc -> bev_6_bus
+	bev_6_ess -> bev_6_bus
+	bev_6_bus -> bev_6_mc
+	bev_6_bus -> bev_6_snk
+	bev_6_bus -> bev_6_ess
+	bev_6_src_ext_ac -> bev_6_bus_ext_ac
+	bev_6_bus_ext_ac -> bev_6_conv_ext_ac
+	bev_6_src_ext_dc -> bev_6_bus_ext_dc
+	bev_6_bus_ext_dc -> bev_6_conv_ext_dc
+	bev_7_conv_ext_ac -> bev_7_bus
+	mc_bev_7 -> bev_7_bus
+	bev_7_conv_ext_dc -> bev_7_bus
+	bev_7_ess -> bev_7_bus
+	bev_7_bus -> bev_7_mc
+	bev_7_bus -> bev_7_snk
+	bev_7_bus -> bev_7_ess
+	bev_7_src_ext_ac -> bev_7_bus_ext_ac
+	bev_7_bus_ext_ac -> bev_7_conv_ext_ac
+	bev_7_src_ext_dc -> bev_7_bus_ext_dc
+	bev_7_bus_ext_dc -> bev_7_conv_ext_dc
+	bev_8_conv_ext_ac -> bev_8_bus
+	bev_8_ess -> bev_8_bus
+	mc_bev_8 -> bev_8_bus
+	bev_8_conv_ext_dc -> bev_8_bus
+	bev_8_bus -> bev_8_mc
+	bev_8_bus -> bev_8_snk
+	bev_8_bus -> bev_8_ess
+	bev_8_src_ext_ac -> bev_8_bus_ext_ac
+	bev_8_bus_ext_ac -> bev_8_conv_ext_ac
+	bev_8_src_ext_dc -> bev_8_bus_ext_dc
+	bev_8_bus_ext_dc -> bev_8_conv_ext_dc
+	mc_bev_9 -> bev_9_bus
+	bev_9_ess -> bev_9_bus
+	bev_9_conv_ext_dc -> bev_9_bus
+	bev_9_conv_ext_ac -> bev_9_bus
+	bev_9_bus -> bev_9_mc
+	bev_9_bus -> bev_9_snk
+	bev_9_bus -> bev_9_ess
+	bev_9_src_ext_ac -> bev_9_bus_ext_ac
+	bev_9_bus_ext_ac -> bev_9_conv_ext_ac
+	bev_9_src_ext_dc -> bev_9_bus_ext_dc
+	bev_9_bus_ext_dc -> bev_9_conv_ext_dc
+	mc_bev_10 -> bev_10_bus
+	bev_10_conv_ext_ac -> bev_10_bus
+	bev_10_conv_ext_dc -> bev_10_bus
+	bev_10_ess -> bev_10_bus
+	bev_10_bus -> bev_10_mc
+	bev_10_bus -> bev_10_snk
+	bev_10_bus -> bev_10_ess
+	bev_10_src_ext_ac -> bev_10_bus_ext_ac
+	bev_10_bus_ext_ac -> bev_10_conv_ext_ac
+	bev_10_src_ext_dc -> bev_10_bus_ext_dc
+	bev_10_bus_ext_dc -> bev_10_conv_ext_dc
+	bev_11_conv_ext_ac -> bev_11_bus
+	mc_bev_11 -> bev_11_bus
+	bev_11_ess -> bev_11_bus
+	bev_11_conv_ext_dc -> bev_11_bus
+	bev_11_bus -> bev_11_mc
+	bev_11_bus -> bev_11_snk
+	bev_11_bus -> bev_11_ess
+	bev_11_src_ext_ac -> bev_11_bus_ext_ac
+	bev_11_bus_ext_ac -> bev_11_conv_ext_ac
+	bev_11_src_ext_dc -> bev_11_bus_ext_dc
+	bev_11_bus_ext_dc -> bev_11_conv_ext_dc
+	bev_12_conv_ext_ac -> bev_12_bus
+	mc_bev_12 -> bev_12_bus
+	bev_12_ess -> bev_12_bus
+	bev_12_conv_ext_dc -> bev_12_bus
+	bev_12_bus -> bev_12_mc
+	bev_12_bus -> bev_12_snk
+	bev_12_bus -> bev_12_ess
+	bev_12_src_ext_ac -> bev_12_bus_ext_ac
+	bev_12_bus_ext_ac -> bev_12_conv_ext_ac
+	bev_12_src_ext_dc -> bev_12_bus_ext_dc
+	bev_12_bus_ext_dc -> bev_12_conv_ext_dc
+	bev_13_conv_ext_ac -> bev_13_bus
+	mc_bev_13 -> bev_13_bus
+	bev_13_conv_ext_dc -> bev_13_bus
+	bev_13_ess -> bev_13_bus
+	bev_13_bus -> bev_13_mc
+	bev_13_bus -> bev_13_snk
+	bev_13_bus -> bev_13_ess
+	bev_13_src_ext_ac -> bev_13_bus_ext_ac
+	bev_13_bus_ext_ac -> bev_13_conv_ext_ac
+	bev_13_src_ext_dc -> bev_13_bus_ext_dc
+	bev_13_bus_ext_dc -> bev_13_conv_ext_dc
+	bev_14_conv_ext_dc -> bev_14_bus
+	bev_14_ess -> bev_14_bus
+	mc_bev_14 -> bev_14_bus
+	bev_14_conv_ext_ac -> bev_14_bus
+	bev_14_bus -> bev_14_mc
+	bev_14_bus -> bev_14_snk
+	bev_14_bus -> bev_14_ess
+	bev_14_src_ext_ac -> bev_14_bus_ext_ac
+	bev_14_bus_ext_ac -> bev_14_conv_ext_ac
+	bev_14_src_ext_dc -> bev_14_bus_ext_dc
+	bev_14_bus_ext_dc -> bev_14_conv_ext_dc
+	brs_16_mc -> brs_bus
+	brs_5_mc -> brs_bus
+	brs_11_mc -> brs_bus
+	brs_3_mc -> brs_bus
+	brs_10_mc -> brs_bus
+	brs_17_mc -> brs_bus
+	brs_19_mc -> brs_bus
+	brs_22_mc -> brs_bus
+	brs_1_mc -> brs_bus
+	brs_26_mc -> brs_bus
+	brs_0_mc -> brs_bus
+	brs_2_mc -> brs_bus
+	brs_23_mc -> brs_bus
+	brs_28_mc -> brs_bus
+	brs_14_mc -> brs_bus
+	brs_24_mc -> brs_bus
+	brs_8_mc -> brs_bus
+	brs_13_mc -> brs_bus
+	brs_18_mc -> brs_bus
+	brs_20_mc -> brs_bus
+	brs_7_mc -> brs_bus
+	xc_brs -> brs_bus
+	brs_4_mc -> brs_bus
+	brs_29_mc -> brs_bus
+	brs_15_mc -> brs_bus
+	brs_21_mc -> brs_bus
+	brs_25_mc -> brs_bus
+	brs_6_mc -> brs_bus
+	brs_12_mc -> brs_bus
+	brs_27_mc -> brs_bus
+	brs_9_mc -> brs_bus
+	brs_bus -> brs_xc
+	brs_bus -> mc_brs_0
+	brs_bus -> mc_brs_1
+	brs_bus -> mc_brs_2
+	brs_bus -> mc_brs_3
+	brs_bus -> mc_brs_4
+	brs_bus -> mc_brs_5
+	brs_bus -> mc_brs_6
+	brs_bus -> mc_brs_7
+	brs_bus -> mc_brs_8
+	brs_bus -> mc_brs_9
+	brs_bus -> mc_brs_10
+	brs_bus -> mc_brs_11
+	brs_bus -> mc_brs_12
+	brs_bus -> mc_brs_13
+	brs_bus -> mc_brs_14
+	brs_bus -> mc_brs_15
+	brs_bus -> mc_brs_16
+	brs_bus -> mc_brs_17
+	brs_bus -> mc_brs_18
+	brs_bus -> mc_brs_19
+	brs_bus -> mc_brs_20
+	brs_bus -> mc_brs_21
+	brs_bus -> mc_brs_22
+	brs_bus -> mc_brs_23
+	brs_bus -> mc_brs_24
+	brs_bus -> mc_brs_25
+	brs_bus -> mc_brs_26
+	brs_bus -> mc_brs_27
+	brs_bus -> mc_brs_28
+	brs_bus -> mc_brs_29
+	brs_0_conv_ext_dc -> brs_0_bus
+	mc_brs_0 -> brs_0_bus
+	brs_0_conv_ext_ac -> brs_0_bus
+	brs_0_ess -> brs_0_bus
+	brs_0_bus -> brs_0_mc
+	brs_0_bus -> brs_0_snk
+	brs_0_bus -> brs_0_ess
+	brs_0_src_ext_ac -> brs_0_bus_ext_ac
+	brs_0_bus_ext_ac -> brs_0_conv_ext_ac
+	brs_0_src_ext_dc -> brs_0_bus_ext_dc
+	brs_0_bus_ext_dc -> brs_0_conv_ext_dc
+	mc_brs_1 -> brs_1_bus
+	brs_1_ess -> brs_1_bus
+	brs_1_conv_ext_dc -> brs_1_bus
+	brs_1_conv_ext_ac -> brs_1_bus
+	brs_1_bus -> brs_1_mc
+	brs_1_bus -> brs_1_snk
+	brs_1_bus -> brs_1_ess
+	brs_1_src_ext_ac -> brs_1_bus_ext_ac
+	brs_1_bus_ext_ac -> brs_1_conv_ext_ac
+	brs_1_src_ext_dc -> brs_1_bus_ext_dc
+	brs_1_bus_ext_dc -> brs_1_conv_ext_dc
+	brs_2_conv_ext_ac -> brs_2_bus
+	brs_2_conv_ext_dc -> brs_2_bus
+	mc_brs_2 -> brs_2_bus
+	brs_2_ess -> brs_2_bus
+	brs_2_bus -> brs_2_mc
+	brs_2_bus -> brs_2_snk
+	brs_2_bus -> brs_2_ess
+	brs_2_src_ext_ac -> brs_2_bus_ext_ac
+	brs_2_bus_ext_ac -> brs_2_conv_ext_ac
+	brs_2_src_ext_dc -> brs_2_bus_ext_dc
+	brs_2_bus_ext_dc -> brs_2_conv_ext_dc
+	brs_3_conv_ext_dc -> brs_3_bus
+	mc_brs_3 -> brs_3_bus
+	brs_3_ess -> brs_3_bus
+	brs_3_conv_ext_ac -> brs_3_bus
+	brs_3_bus -> brs_3_mc
+	brs_3_bus -> brs_3_snk
+	brs_3_bus -> brs_3_ess
+	brs_3_src_ext_ac -> brs_3_bus_ext_ac
+	brs_3_bus_ext_ac -> brs_3_conv_ext_ac
+	brs_3_src_ext_dc -> brs_3_bus_ext_dc
+	brs_3_bus_ext_dc -> brs_3_conv_ext_dc
+	brs_4_conv_ext_dc -> brs_4_bus
+	brs_4_conv_ext_ac -> brs_4_bus
+	brs_4_ess -> brs_4_bus
+	mc_brs_4 -> brs_4_bus
+	brs_4_bus -> brs_4_mc
+	brs_4_bus -> brs_4_snk
+	brs_4_bus -> brs_4_ess
+	brs_4_src_ext_ac -> brs_4_bus_ext_ac
+	brs_4_bus_ext_ac -> brs_4_conv_ext_ac
+	brs_4_src_ext_dc -> brs_4_bus_ext_dc
+	brs_4_bus_ext_dc -> brs_4_conv_ext_dc
+	brs_5_conv_ext_ac -> brs_5_bus
+	brs_5_conv_ext_dc -> brs_5_bus
+	mc_brs_5 -> brs_5_bus
+	brs_5_ess -> brs_5_bus
+	brs_5_bus -> brs_5_mc
+	brs_5_bus -> brs_5_snk
+	brs_5_bus -> brs_5_ess
+	brs_5_src_ext_ac -> brs_5_bus_ext_ac
+	brs_5_bus_ext_ac -> brs_5_conv_ext_ac
+	brs_5_src_ext_dc -> brs_5_bus_ext_dc
+	brs_5_bus_ext_dc -> brs_5_conv_ext_dc
+	brs_6_conv_ext_ac -> brs_6_bus
+	mc_brs_6 -> brs_6_bus
+	brs_6_conv_ext_dc -> brs_6_bus
+	brs_6_ess -> brs_6_bus
+	brs_6_bus -> brs_6_mc
+	brs_6_bus -> brs_6_snk
+	brs_6_bus -> brs_6_ess
+	brs_6_src_ext_ac -> brs_6_bus_ext_ac
+	brs_6_bus_ext_ac -> brs_6_conv_ext_ac
+	brs_6_src_ext_dc -> brs_6_bus_ext_dc
+	brs_6_bus_ext_dc -> brs_6_conv_ext_dc
+	brs_7_conv_ext_dc -> brs_7_bus
+	brs_7_conv_ext_ac -> brs_7_bus
+	mc_brs_7 -> brs_7_bus
+	brs_7_ess -> brs_7_bus
+	brs_7_bus -> brs_7_mc
+	brs_7_bus -> brs_7_snk
+	brs_7_bus -> brs_7_ess
+	brs_7_src_ext_ac -> brs_7_bus_ext_ac
+	brs_7_bus_ext_ac -> brs_7_conv_ext_ac
+	brs_7_src_ext_dc -> brs_7_bus_ext_dc
+	brs_7_bus_ext_dc -> brs_7_conv_ext_dc
+	mc_brs_8 -> brs_8_bus
+	brs_8_conv_ext_ac -> brs_8_bus
+	brs_8_conv_ext_dc -> brs_8_bus
+	brs_8_ess -> brs_8_bus
+	brs_8_bus -> brs_8_mc
+	brs_8_bus -> brs_8_snk
+	brs_8_bus -> brs_8_ess
+	brs_8_src_ext_ac -> brs_8_bus_ext_ac
+	brs_8_bus_ext_ac -> brs_8_conv_ext_ac
+	brs_8_src_ext_dc -> brs_8_bus_ext_dc
+	brs_8_bus_ext_dc -> brs_8_conv_ext_dc
+	brs_9_conv_ext_ac -> brs_9_bus
+	brs_9_conv_ext_dc -> brs_9_bus
+	brs_9_ess -> brs_9_bus
+	mc_brs_9 -> brs_9_bus
+	brs_9_bus -> brs_9_mc
+	brs_9_bus -> brs_9_snk
+	brs_9_bus -> brs_9_ess
+	brs_9_src_ext_ac -> brs_9_bus_ext_ac
+	brs_9_bus_ext_ac -> brs_9_conv_ext_ac
+	brs_9_src_ext_dc -> brs_9_bus_ext_dc
+	brs_9_bus_ext_dc -> brs_9_conv_ext_dc
+	mc_brs_10 -> brs_10_bus
+	brs_10_conv_ext_ac -> brs_10_bus
+	brs_10_conv_ext_dc -> brs_10_bus
+	brs_10_ess -> brs_10_bus
+	brs_10_bus -> brs_10_mc
+	brs_10_bus -> brs_10_snk
+	brs_10_bus -> brs_10_ess
+	brs_10_src_ext_ac -> brs_10_bus_ext_ac
+	brs_10_bus_ext_ac -> brs_10_conv_ext_ac
+	brs_10_src_ext_dc -> brs_10_bus_ext_dc
+	brs_10_bus_ext_dc -> brs_10_conv_ext_dc
+	mc_brs_11 -> brs_11_bus
+	brs_11_conv_ext_dc -> brs_11_bus
+	brs_11_conv_ext_ac -> brs_11_bus
+	brs_11_ess -> brs_11_bus
+	brs_11_bus -> brs_11_mc
+	brs_11_bus -> brs_11_snk
+	brs_11_bus -> brs_11_ess
+	brs_11_src_ext_ac -> brs_11_bus_ext_ac
+	brs_11_bus_ext_ac -> brs_11_conv_ext_ac
+	brs_11_src_ext_dc -> brs_11_bus_ext_dc
+	brs_11_bus_ext_dc -> brs_11_conv_ext_dc
+	brs_12_conv_ext_dc -> brs_12_bus
+	brs_12_ess -> brs_12_bus
+	mc_brs_12 -> brs_12_bus
+	brs_12_conv_ext_ac -> brs_12_bus
+	brs_12_bus -> brs_12_mc
+	brs_12_bus -> brs_12_snk
+	brs_12_bus -> brs_12_ess
+	brs_12_src_ext_ac -> brs_12_bus_ext_ac
+	brs_12_bus_ext_ac -> brs_12_conv_ext_ac
+	brs_12_src_ext_dc -> brs_12_bus_ext_dc
+	brs_12_bus_ext_dc -> brs_12_conv_ext_dc
+	mc_brs_13 -> brs_13_bus
+	brs_13_conv_ext_dc -> brs_13_bus
+	brs_13_ess -> brs_13_bus
+	brs_13_conv_ext_ac -> brs_13_bus
+	brs_13_bus -> brs_13_mc
+	brs_13_bus -> brs_13_snk
+	brs_13_bus -> brs_13_ess
+	brs_13_src_ext_ac -> brs_13_bus_ext_ac
+	brs_13_bus_ext_ac -> brs_13_conv_ext_ac
+	brs_13_src_ext_dc -> brs_13_bus_ext_dc
+	brs_13_bus_ext_dc -> brs_13_conv_ext_dc
+	brs_14_conv_ext_ac -> brs_14_bus
+	brs_14_conv_ext_dc -> brs_14_bus
+	mc_brs_14 -> brs_14_bus
+	brs_14_ess -> brs_14_bus
+	brs_14_bus -> brs_14_mc
+	brs_14_bus -> brs_14_snk
+	brs_14_bus -> brs_14_ess
+	brs_14_src_ext_ac -> brs_14_bus_ext_ac
+	brs_14_bus_ext_ac -> brs_14_conv_ext_ac
+	brs_14_src_ext_dc -> brs_14_bus_ext_dc
+	brs_14_bus_ext_dc -> brs_14_conv_ext_dc
+	brs_15_conv_ext_ac -> brs_15_bus
+	mc_brs_15 -> brs_15_bus
+	brs_15_ess -> brs_15_bus
+	brs_15_conv_ext_dc -> brs_15_bus
+	brs_15_bus -> brs_15_mc
+	brs_15_bus -> brs_15_snk
+	brs_15_bus -> brs_15_ess
+	brs_15_src_ext_ac -> brs_15_bus_ext_ac
+	brs_15_bus_ext_ac -> brs_15_conv_ext_ac
+	brs_15_src_ext_dc -> brs_15_bus_ext_dc
+	brs_15_bus_ext_dc -> brs_15_conv_ext_dc
+	mc_brs_16 -> brs_16_bus
+	brs_16_ess -> brs_16_bus
+	brs_16_conv_ext_ac -> brs_16_bus
+	brs_16_conv_ext_dc -> brs_16_bus
+	brs_16_bus -> brs_16_mc
+	brs_16_bus -> brs_16_snk
+	brs_16_bus -> brs_16_ess
+	brs_16_src_ext_ac -> brs_16_bus_ext_ac
+	brs_16_bus_ext_ac -> brs_16_conv_ext_ac
+	brs_16_src_ext_dc -> brs_16_bus_ext_dc
+	brs_16_bus_ext_dc -> brs_16_conv_ext_dc
+	brs_17_conv_ext_dc -> brs_17_bus
+	brs_17_ess -> brs_17_bus
+	brs_17_conv_ext_ac -> brs_17_bus
+	mc_brs_17 -> brs_17_bus
+	brs_17_bus -> brs_17_mc
+	brs_17_bus -> brs_17_snk
+	brs_17_bus -> brs_17_ess
+	brs_17_src_ext_ac -> brs_17_bus_ext_ac
+	brs_17_bus_ext_ac -> brs_17_conv_ext_ac
+	brs_17_src_ext_dc -> brs_17_bus_ext_dc
+	brs_17_bus_ext_dc -> brs_17_conv_ext_dc
+	mc_brs_18 -> brs_18_bus
+	brs_18_ess -> brs_18_bus
+	brs_18_conv_ext_ac -> brs_18_bus
+	brs_18_conv_ext_dc -> brs_18_bus
+	brs_18_bus -> brs_18_mc
+	brs_18_bus -> brs_18_snk
+	brs_18_bus -> brs_18_ess
+	brs_18_src_ext_ac -> brs_18_bus_ext_ac
+	brs_18_bus_ext_ac -> brs_18_conv_ext_ac
+	brs_18_src_ext_dc -> brs_18_bus_ext_dc
+	brs_18_bus_ext_dc -> brs_18_conv_ext_dc
+	brs_19_conv_ext_dc -> brs_19_bus
+	brs_19_ess -> brs_19_bus
+	mc_brs_19 -> brs_19_bus
+	brs_19_conv_ext_ac -> brs_19_bus
+	brs_19_bus -> brs_19_mc
+	brs_19_bus -> brs_19_snk
+	brs_19_bus -> brs_19_ess
+	brs_19_src_ext_ac -> brs_19_bus_ext_ac
+	brs_19_bus_ext_ac -> brs_19_conv_ext_ac
+	brs_19_src_ext_dc -> brs_19_bus_ext_dc
+	brs_19_bus_ext_dc -> brs_19_conv_ext_dc
+	brs_20_conv_ext_ac -> brs_20_bus
+	brs_20_ess -> brs_20_bus
+	brs_20_conv_ext_dc -> brs_20_bus
+	mc_brs_20 -> brs_20_bus
+	brs_20_bus -> brs_20_mc
+	brs_20_bus -> brs_20_snk
+	brs_20_bus -> brs_20_ess
+	brs_20_src_ext_ac -> brs_20_bus_ext_ac
+	brs_20_bus_ext_ac -> brs_20_conv_ext_ac
+	brs_20_src_ext_dc -> brs_20_bus_ext_dc
+	brs_20_bus_ext_dc -> brs_20_conv_ext_dc
+	mc_brs_21 -> brs_21_bus
+	brs_21_ess -> brs_21_bus
+	brs_21_conv_ext_dc -> brs_21_bus
+	brs_21_conv_ext_ac -> brs_21_bus
+	brs_21_bus -> brs_21_mc
+	brs_21_bus -> brs_21_snk
+	brs_21_bus -> brs_21_ess
+	brs_21_src_ext_ac -> brs_21_bus_ext_ac
+	brs_21_bus_ext_ac -> brs_21_conv_ext_ac
+	brs_21_src_ext_dc -> brs_21_bus_ext_dc
+	brs_21_bus_ext_dc -> brs_21_conv_ext_dc
+	mc_brs_22 -> brs_22_bus
+	brs_22_ess -> brs_22_bus
+	brs_22_conv_ext_ac -> brs_22_bus
+	brs_22_conv_ext_dc -> brs_22_bus
+	brs_22_bus -> brs_22_mc
+	brs_22_bus -> brs_22_snk
+	brs_22_bus -> brs_22_ess
+	brs_22_src_ext_ac -> brs_22_bus_ext_ac
+	brs_22_bus_ext_ac -> brs_22_conv_ext_ac
+	brs_22_src_ext_dc -> brs_22_bus_ext_dc
+	brs_22_bus_ext_dc -> brs_22_conv_ext_dc
+	brs_23_ess -> brs_23_bus
+	brs_23_conv_ext_ac -> brs_23_bus
+	brs_23_conv_ext_dc -> brs_23_bus
+	mc_brs_23 -> brs_23_bus
+	brs_23_bus -> brs_23_mc
+	brs_23_bus -> brs_23_snk
+	brs_23_bus -> brs_23_ess
+	brs_23_src_ext_ac -> brs_23_bus_ext_ac
+	brs_23_bus_ext_ac -> brs_23_conv_ext_ac
+	brs_23_src_ext_dc -> brs_23_bus_ext_dc
+	brs_23_bus_ext_dc -> brs_23_conv_ext_dc
+	mc_brs_24 -> brs_24_bus
+	brs_24_conv_ext_dc -> brs_24_bus
+	brs_24_conv_ext_ac -> brs_24_bus
+	brs_24_ess -> brs_24_bus
+	brs_24_bus -> brs_24_mc
+	brs_24_bus -> brs_24_snk
+	brs_24_bus -> brs_24_ess
+	brs_24_src_ext_ac -> brs_24_bus_ext_ac
+	brs_24_bus_ext_ac -> brs_24_conv_ext_ac
+	brs_24_src_ext_dc -> brs_24_bus_ext_dc
+	brs_24_bus_ext_dc -> brs_24_conv_ext_dc
+	brs_25_ess -> brs_25_bus
+	brs_25_conv_ext_dc -> brs_25_bus
+	mc_brs_25 -> brs_25_bus
+	brs_25_conv_ext_ac -> brs_25_bus
+	brs_25_bus -> brs_25_mc
+	brs_25_bus -> brs_25_snk
+	brs_25_bus -> brs_25_ess
+	brs_25_src_ext_ac -> brs_25_bus_ext_ac
+	brs_25_bus_ext_ac -> brs_25_conv_ext_ac
+	brs_25_src_ext_dc -> brs_25_bus_ext_dc
+	brs_25_bus_ext_dc -> brs_25_conv_ext_dc
+	brs_26_ess -> brs_26_bus
+	brs_26_conv_ext_ac -> brs_26_bus
+	brs_26_conv_ext_dc -> brs_26_bus
+	mc_brs_26 -> brs_26_bus
+	brs_26_bus -> brs_26_mc
+	brs_26_bus -> brs_26_snk
+	brs_26_bus -> brs_26_ess
+	brs_26_src_ext_ac -> brs_26_bus_ext_ac
+	brs_26_bus_ext_ac -> brs_26_conv_ext_ac
+	brs_26_src_ext_dc -> brs_26_bus_ext_dc
+	brs_26_bus_ext_dc -> brs_26_conv_ext_dc
+	brs_27_conv_ext_ac -> brs_27_bus
+	mc_brs_27 -> brs_27_bus
+	brs_27_ess -> brs_27_bus
+	brs_27_conv_ext_dc -> brs_27_bus
+	brs_27_bus -> brs_27_mc
+	brs_27_bus -> brs_27_snk
+	brs_27_bus -> brs_27_ess
+	brs_27_src_ext_ac -> brs_27_bus_ext_ac
+	brs_27_bus_ext_ac -> brs_27_conv_ext_ac
+	brs_27_src_ext_dc -> brs_27_bus_ext_dc
+	brs_27_bus_ext_dc -> brs_27_conv_ext_dc
+	mc_brs_28 -> brs_28_bus
+	brs_28_conv_ext_ac -> brs_28_bus
+	brs_28_ess -> brs_28_bus
+	brs_28_conv_ext_dc -> brs_28_bus
+	brs_28_bus -> brs_28_mc
+	brs_28_bus -> brs_28_snk
+	brs_28_bus -> brs_28_ess
+	brs_28_src_ext_ac -> brs_28_bus_ext_ac
+	brs_28_bus_ext_ac -> brs_28_conv_ext_ac
+	brs_28_src_ext_dc -> brs_28_bus_ext_dc
+	brs_28_bus_ext_dc -> brs_28_conv_ext_dc
+	mc_brs_29 -> brs_29_bus
+	brs_29_ess -> brs_29_bus
+	brs_29_conv_ext_dc -> brs_29_bus
+	brs_29_conv_ext_ac -> brs_29_bus
+	brs_29_bus -> brs_29_mc
+	brs_29_bus -> brs_29_snk
+	brs_29_bus -> brs_29_ess
+	brs_29_src_ext_ac -> brs_29_bus_ext_ac
+	brs_29_bus_ext_ac -> brs_29_conv_ext_ac
+	brs_29_src_ext_dc -> brs_29_bus_ext_dc
+	brs_29_bus_ext_dc -> brs_29_conv_ext_dc
+}

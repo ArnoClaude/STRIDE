@@ -295,19 +295,27 @@ def plot_co2_compliance(results: Dict, co2_limits: Optional[Dict] = None, output
     x = np.arange(len(years))
     width = 0.35
     
-    # Get CO2 from results (extrapolated to project duration)
-    co2_actual = np.array([results[str(y)]['co2_prj_kg'] for y in years]) / 1000  # tons
+    # Get CO2 from results (simulation period - matches constraint)
+    co2_actual = np.array([results[str(y)].get('co2_sim_kg', 0) or 0 for y in years]) / 1000  # kg -> tons
     
-    # Default CO2 limits if not provided (from config: 200k→20k kg linear)
+    # Get CO2 limits from results if available, otherwise use provided or defaults
     if co2_limits is None:
-        co2_limits = {2025: 200000, 2030: 164000, 2035: 128000, 2040: 92000, 2045: 56000, 2050: 20000}
-    co2_limit = np.array([co2_limits.get(y, 100000) for y in years]) / 1000  # tons
+        # Try to get from results
+        co2_limits = {}
+        for y in years:
+            limit = results[str(y)].get('co2_limit_kg')
+            if limit is not None:
+                co2_limits[y] = limit
+        # Fall back to defaults if not in results
+        if not co2_limits:
+            co2_limits = {2025: 200000, 2030: 164000, 2035: 128000, 2040: 92000, 2045: 56000, 2050: 20000}
+    co2_limit = np.array([co2_limits.get(y, 100000) for y in years]) / 1000  # kg -> tons
     
     bars1 = ax.bar(x - width/2, co2_actual, width, label='Actual Emissions', color=COLORS['co2_actual'], edgecolor='black', linewidth=0.5)
     bars2 = ax.bar(x + width/2, co2_limit, width, label='CO₂ Limit', color=COLORS['co2_limit'], edgecolor='black', linewidth=0.5)
     
     ax.set_xlabel('Investment Stage')
-    ax.set_ylabel('CO₂ Emissions (tons/project period)')
+    ax.set_ylabel('CO₂ Emissions (tons/simulation period)')
     ax.set_title('CO₂ Compliance: Emissions vs Regulatory Limits')
     ax.set_xticks(x)
     ax.set_xticklabels(years)

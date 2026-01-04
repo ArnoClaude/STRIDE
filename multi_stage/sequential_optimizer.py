@@ -317,13 +317,16 @@ class SequentialStageOptimizer:
         Shows absolute values and percentage changes between consecutive stages
         for each metric that changes over time.
         """
-        if len(self.stage_results) < 2:
-            return  # Need at least 2 stages to show trajectory
+        if len(self.stage_results) < 1:
+            return  # Need at least 1 stage to show anything
         
         years = sorted(self.stage_results.keys())
         
         print(f"\n{'─'*80}")
-        print(f"TRAJECTORY: Stages {years[0]} → {years[-1]}")
+        if len(years) == 1:
+            print(f"TRAJECTORY: Stage {years[0]} (baseline)")
+        else:
+            print(f"TRAJECTORY: Stages {years[0]} → {years[-1]}")
         print(f"{'─'*80}")
         
         # Define metrics to track with display formatting

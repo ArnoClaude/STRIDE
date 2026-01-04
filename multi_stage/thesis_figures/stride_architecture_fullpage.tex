@@ -1,0 +1,191 @@
+% STRIDE System Architecture - Full Page Thesis Figure
+% Include with: \input{figures/stride_architecture_fullpage}
+% Requires: \usepackage{tikz}, \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, patterns}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    scale=0.85,
+    transform shape,
+    % Node styles
+    component/.style={
+        rectangle, rounded corners=4pt, draw=#1, fill=#1!12,
+        line width=1.2pt, minimum width=3.2cm, minimum height=1.1cm,
+        font=\small\sffamily, align=center, text=black
+    },
+    modified/.style={
+        rectangle, rounded corners=4pt, draw=TUMOrange, fill=TUMOrange!15,
+        line width=1.5pt, minimum width=3.2cm, minimum height=1.1cm,
+        font=\small\sffamily, align=center,
+        postaction={pattern=north east lines, pattern color=TUMOrange!40}
+    },
+    file/.style={
+        rectangle, draw=#1!70!black, fill=#1!25,
+        minimum width=2.4cm, minimum height=0.7cm,
+        font=\scriptsize\ttfamily, align=center
+    },
+    groupbox/.style={
+        rectangle, rounded corners=8pt, draw=#1!80!black, line width=2pt,
+        fill=#1!8, inner sep=12pt
+    },
+    arrow/.style={-{Stealth[scale=1.2]}, line width=1pt, draw=black!70},
+    dataarrow/.style={-{Stealth[scale=1]}, line width=0.8pt, draw=gray, dashed},
+    looparrow/.style={-{Stealth[scale=1.3]}, line width=1.5pt, draw=TUMBlue}
+]
+
+% Define TUM colors
+\definecolor{TUMBlue}{RGB}{0, 101, 189}
+\definecolor{TUMGreen}{RGB}{162, 173, 0}
+\definecolor{TUMOrange}{RGB}{227, 114, 34}
+\definecolor{TUMGray}{RGB}{128, 128, 128}
+
+% ============================================
+% LAYER 1: INPUT FILES (Top)
+% ============================================
+
+\node[file=TUMGray] (configyaml) at (0, 10) {config.yaml};
+\node[file=TUMGray, right=0.5cm of configyaml] (scenariocsv) {scenarios.csv};
+\node[file=TUMGray, right=0.5cm of scenariocsv] (settingscsv) {settings.csv};
+\node[file=TUMGray, right=0.5cm of settingscsv] (bevlog) {bev\_log.csv};
+\node[file=TUMGray, right=0.5cm of bevlog] (timeseries) {timeseries/*.csv};
+
+\node[anchor=west, font=\small\sffamily\itshape, text=TUMGray] at (-2.5, 10) {Input Files};
+
+% ============================================
+% LAYER 2: STRIDE WRAPPER (Blue)
+% ============================================
+
+\node[component=TUMBlue] (mainpy) at (0, 7.8) {\textbf{main.py}\\[-2pt]\scriptsize CLI entry point};
+\node[component=TUMBlue, right=0.8cm of mainpy] (seqopt) {\textbf{sequential\_optimizer}\\[-2pt]\scriptsize Stage iteration loop};
+\node[component=TUMBlue, right=0.8cm of seqopt] (scenbuilder) {\textbf{scenario\_builder}\\[-2pt]\scriptsize Generate stage CSV};
+\node[component=TUMBlue, right=0.8cm of scenbuilder] (fleetscaler) {\textbf{fleet\_scaler}\\[-2pt]\scriptsize Scale bev\_log};
+
+% STRIDE group box
+\begin{scope}[on background layer]
+    \node[groupbox=TUMBlue, fit=(mainpy)(seqopt)(scenbuilder)(fleetscaler), 
+          label={[font=\sffamily\bfseries\large, text=TUMBlue]north west:STRIDE Multi-Stage Wrapper}] (stridebox) {};
+\end{scope}
+
+% ============================================
+% LAYER 3: STAGE STATE (Carried between stages)
+% ============================================
+
+\node[component=TUMBlue, minimum width=14cm, minimum height=1.4cm, fill=TUMBlue!20] (stagestate) at (6.5, 5.2) {
+    \textbf{Stage State} \scriptsize (carried to next iteration)\\[3pt]
+    \normalsize\ttfamily size\_existing: PV, ESS, Grid \quad|\quad year: $t \rightarrow t+\Delta$ \quad|\quad co2\_limit
+};
+
+% ============================================
+% LAYER 4: REVOL-E-TION CORE (Green)
+% ============================================
+
+% Energy system blocks (top row)
+\node[component=TUMGreen] (pv) at (-0.5, 2.8) {\textbf{PVSource}\\[-2pt]\scriptsize Rooftop solar};
+\node[component=TUMGreen, right=0.6cm of pv] (ess) {\textbf{EnergyStorage}\\[-2pt]\scriptsize Battery system};
+\node[component=TUMGreen, right=0.6cm of ess] (grid) {\textbf{GridConnection}\\[-2pt]\scriptsize Import/export};
+\node[component=TUMGreen, right=0.6cm of grid] (bev) {\textbf{VehicleSystem}\\[-2pt]\scriptsize EV fleet charging};
+\node[component=TUMGreen, right=0.6cm of bev] (dem) {\textbf{FixedDemand}\\[-2pt]\scriptsize Building load};
+
+% Modified components (Orange hatched)
+\node[modified] (investblock) at (2, 0.8) {\textbf{InvestBlock}\\[-2pt]\scriptsize\textit{+size\_existing}\\[-2pt]\scriptsize\textit{+capex\_existing}};
+\node[modified, right=1.5cm of investblock] (co2constr) {\textbf{CO$_2$ Constraint}\\[-2pt]\scriptsize\textit{New constraint}\\[-2pt]\scriptsize $\sum E_{grid} \cdot f_{CO_2} \leq C_{max}$};
+
+% Core optimization
+\node[component=TUMGreen, minimum width=5.5cm] (milp) at (2, -1.5) {\textbf{MILP Optimization}\\[-2pt]\scriptsize oemof-solph + Pyomo\\[-2pt]\scriptsize $\min(\text{CAPEX} + \text{OPEX})$};
+\node[component=TUMGreen, minimum width=5.5cm] (des) at (10, -1.5) {\textbf{Discrete Event Simulation}\\[-2pt]\scriptsize Fleet behavior model\\[-2pt]\scriptsize Charging demand profiles};
+
+% Solver
+\node[component=TUMGreen, minimum width=3.5cm, fill=TUMGreen!25] (solver) at (6, -3.5) {\textbf{Solver}\\[-2pt]\scriptsize Gurobi / CBC / HiGHS};
+
+% REVOL-E-TION group box
+\begin{scope}[on background layer]
+    \node[groupbox=TUMGreen, fit=(pv)(ess)(grid)(bev)(dem)(investblock)(co2constr)(milp)(des)(solver),
+          label={[font=\sffamily\bfseries\large, text=TUMGreen]south west:REVOL-E-TION Core (Extended)}] (revolbox) {};
+\end{scope}
+
+% ============================================
+% LAYER 5: OUTPUTS (Right side)
+% ============================================
+
+\node[component=TUMBlue] (parser) at (13.5, 2) {\textbf{results\_parser}\\[-2pt]\scriptsize Extract capacities};
+
+\node[file=purple!70] (resultsjson) at (13.5, -0.5) {results.json};
+\node[file=purple!70, below=0.3cm of resultsjson] (timeline) {timeline.csv};
+\node[file=purple!70, below=0.3cm of timeline] (plots) {plots/*.pdf};
+
+% ============================================
+% ARROWS - Control & Data Flow
+% ============================================
+
+% Input files to STRIDE
+\draw[dataarrow] (configyaml.south) -- ++(0,-0.5) -| (mainpy.north);
+\draw[dataarrow] (scenariocsv.south) -- ++(0,-0.7) -| (scenbuilder.north);
+\draw[dataarrow] (bevlog.south) -- ++(0,-0.5) -| (fleetscaler.north);
+
+% STRIDE internal
+\draw[arrow] (mainpy) -- (seqopt);
+\draw[arrow] (seqopt) -- (scenbuilder);
+\draw[arrow] (scenbuilder) -- (fleetscaler);
+
+% STRIDE to stage state
+\draw[arrow] (seqopt.south) -- ++(0,-0.3) -- (stagestate.north -| seqopt);
+
+% Stage state to REVOL-E-TION blocks
+\draw[arrow] (stagestate.south) -- ++(0,-0.5) -| (pv.north);
+\draw[arrow] (stagestate.south) -- ++(0,-0.5) -| (ess.north);
+\draw[arrow] (stagestate.south) -- ++(0,-0.5) -| (grid.north);
+\draw[arrow] (stagestate.south) -- ++(0,-0.5) -| (bev.north);
+
+% Blocks to optimization
+\draw[arrow] (pv.south) -- ++(0,-0.3) -| (investblock.north);
+\draw[arrow] (ess.south) -- ++(0,-0.5) -| ($(investblock.north)+(0.3,0)$);
+\draw[arrow] (grid.south) -- ++(0,-0.7) -| ($(investblock.north)+(0.6,0)$);
+\draw[arrow] (bev.south) -- ++(0,-0.3) -| (des.north);
+\draw[arrow] (dem.south) -- ++(0,-0.5) -| ($(des.north)+(0.5,0)$);
+
+% InvestBlock and CO2 to MILP
+\draw[arrow] (investblock.south) -- ($(milp.north)+(-1,0)$);
+\draw[arrow] (co2constr.south) -- ($(milp.north)+(1,0)$);
+
+% DES to MILP
+\draw[arrow] (des.west) -- (milp.east);
+
+% MILP to Solver
+\draw[arrow] (milp.south) -- (solver.north);
+
+% Solver to outputs
+\draw[arrow] (solver.east) -| (resultsjson.west);
+
+% Results to parser
+\draw[arrow] (resultsjson.north) -- (parser.south);
+
+% Parser back to stage state (THE LOOP)
+\draw[looparrow] (parser.north) -- ++(0, 1) -- ++(-6, 0) 
+    node[midway, above, font=\small\sffamily\bfseries, text=TUMBlue] {Stage Linking: Update size\_existing} 
+    -- (stagestate.east);
+
+% Results to files
+\draw[dataarrow] (resultsjson.south) -- (timeline.north);
+\draw[dataarrow] (timeline.south) -- (plots.north);
+
+% ============================================
+% LEGEND
+% ============================================
+
+\node[anchor=north west] at (-2, -5) {
+    \begin{tikzpicture}[scale=0.9]
+        \node[component=TUMBlue, minimum width=2cm, minimum height=0.6cm, font=\scriptsize] at (0,0) {STRIDE};
+        \node[anchor=west, font=\scriptsize\sffamily] at (1.2,0) {New wrapper code};
+        
+        \node[component=TUMGreen, minimum width=2cm, minimum height=0.6cm, font=\scriptsize] at (5,0) {REVOL-E-TION};
+        \node[anchor=west, font=\scriptsize\sffamily] at (6.2,0) {Existing framework};
+        
+        \node[modified, minimum width=2cm, minimum height=0.6cm, font=\scriptsize] at (10.5,0) {Modified};
+        \node[anchor=west, font=\scriptsize\sffamily] at (11.7,0) {Extensions added};
+    \end{tikzpicture}
+};
+
+\end{tikzpicture}
+\caption{STRIDE system architecture showing the multi-stage wrapper built on REVOL-E-TION. Blue components are new STRIDE code, green components are existing REVOL-E-TION modules, and orange-hatched components indicate extensions to the base framework. The stage linking loop (bold blue arrow) carries investment decisions forward as \texttt{size\_existing} constraints.}
+\label{fig:stride-architecture}
+\end{figure}

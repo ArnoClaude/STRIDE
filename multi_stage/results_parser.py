@@ -169,18 +169,20 @@ class ResultsParser:
         results['grid_size_g2s_invest'] = get_value('grid', 'size_g2s_additional')
 
         # Energy metrics (simulation period)
-        results['grid_import_sim_kwh'] = (get_value('grid', 'e_del_sim') / 1000
-                                         if get_value('grid', 'e_del_sim') else 0)
-        results['grid_export_sim_kwh'] = (get_value('grid', 'e_pro_sim') / 1000
-                                         if get_value('grid', 'e_pro_sim') else 0)
+        # Note: For grid, e_out_sim = grid imports (g2s), e_in_sim = grid exports (s2g)
+        results['grid_import_sim_kwh'] = (get_value('grid', 'e_out_sim') / 1000
+                                         if get_value('grid', 'e_out_sim') else 0)
+        results['grid_export_sim_kwh'] = (get_value('grid', 'e_in_sim') / 1000
+                                         if get_value('grid', 'e_in_sim') else 0)
         results['pv_generation_sim_kwh'] = (get_value('pv', 'e_pro_sim') / 1000
                                            if get_value('pv', 'e_pro_sim') else 0)
 
         # CO2 emissions (simulation period)
-        # Note: Using grid CO2 factor if available, defaulting to 0.35 kg/kWh (UBA 2024: 363 g/kWh)
-        results['co2_sim_kg'] = ((get_value('grid', 'e_del_sim') / 1000 *
-                                 (get_value('grid', 'co2_spec_g2s') or 0.35))
-                                if get_value('grid', 'e_del_sim') else 0)
+        # Use REVOL-E-TION's calculated value directly (already in kg)
+        results['co2_sim_kg'] = get_value('grid', 'co2_sim_kg') or 0
+        
+        # CO2 limit from scenario (for compliance checking)
+        results['co2_limit_kg'] = get_value('scenario', 'co2_max')
 
         # Calculate project-level CO2 emissions (extrapolated from simulation)
         # NOTE: REVOL-E-TION uses 'prj_duration_yrs' in output, not 'prj_duration'

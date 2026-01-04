@@ -1,0 +1,191 @@
+% STRIDE Multi-Stage Flow Diagram - Thesis Figure
+% Shows the sequential stage optimization with linking constraints
+% Include with: \input{figures/stride_stage_flow}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    scale=0.9,
+    transform shape,
+    % Stage box style
+    stagebox/.style={
+        rectangle, rounded corners=6pt, draw=TUMBlue, fill=TUMBlue!10,
+        line width=1.5pt, minimum width=3cm, minimum height=4.5cm,
+        font=\sffamily, align=center
+    },
+    % Inner component style
+    inner/.style={
+        rectangle, rounded corners=3pt, draw=#1!80!black, fill=#1!20,
+        minimum width=2.4cm, minimum height=0.7cm,
+        font=\scriptsize\sffamily, align=center
+    },
+    % Constraint style
+    constraint/.style={
+        rectangle, rounded corners=2pt, draw=TUMOrange, fill=TUMOrange!15,
+        minimum width=2.4cm, minimum height=0.6cm,
+        font=\scriptsize\sffamily, align=center
+    },
+    % Arrow styles
+    stagearrow/.style={-{Stealth[scale=1.5]}, line width=2pt, draw=TUMBlue},
+    linkingarrow/.style={-{Stealth[scale=1.2]}, line width=1.5pt, draw=TUMOrange, dashed},
+    timeline/.style={-{Stealth[scale=1.2]}, line width=1pt, draw=black!50}
+]
+
+% Define TUM colors
+\definecolor{TUMBlue}{RGB}{0, 101, 189}
+\definecolor{TUMGreen}{RGB}{162, 173, 0}
+\definecolor{TUMOrange}{RGB}{227, 114, 34}
+
+% ============================================
+% TIMELINE AXIS
+% ============================================
+
+\draw[timeline] (-1, -3) -- (16, -3) node[right, font=\sffamily] {Time};
+\foreach \x/\label in {0.5/$t_1$, 4.5/$t_2$, 8.5/$t_3$, 12.5/$t_N$} {
+    \draw[black!50, line width=1pt] (\x, -2.8) -- (\x, -3.2);
+    \node[below, font=\small\sffamily] at (\x, -3.3) {\label};
+}
+
+% Dots between t_3 and t_N
+\node[font=\Large] at (10.5, -3) {$\cdots$};
+
+% ============================================
+% STAGE 1
+% ============================================
+
+\node[stagebox] (stage1) at (0.5, 1) {};
+\node[above, font=\sffamily\bfseries, text=TUMBlue] at (stage1.north) {Stage 1};
+
+% Stage 1 contents
+\node[inner=TUMGreen] (s1opt) at (0.5, 2.5) {Optimize};
+\node[inner=gray] (s1pv) at (0.5, 1.5) {PV: $P_1^*$};
+\node[inner=gray] (s1ess) at (0.5, 0.7) {ESS: $E_1^*$};
+\node[constraint] (s1co2) at (0.5, -0.3) {CO$_2 \leq C_1$};
+
+% Stage 1 initial conditions
+\node[inner=TUMBlue, minimum width=2.4cm] (s1init) at (0.5, 3.8) {$P_0 = 0$\\$E_0 = 0$};
+\draw[-{Stealth}, line width=1pt] (s1init.south) -- (s1opt.north);
+
+% ============================================
+% STAGE 2
+% ============================================
+
+\node[stagebox] (stage2) at (4.5, 1) {};
+\node[above, font=\sffamily\bfseries, text=TUMBlue] at (stage2.north) {Stage 2};
+
+% Stage 2 contents
+\node[inner=TUMGreen] (s2opt) at (4.5, 2.5) {Optimize};
+\node[inner=gray] (s2pv) at (4.5, 1.5) {PV: $P_2^*$};
+\node[inner=gray] (s2ess) at (4.5, 0.7) {ESS: $E_2^*$};
+\node[constraint] (s2co2) at (4.5, -0.3) {CO$_2 \leq C_2$};
+
+% ============================================
+% STAGE 3
+% ============================================
+
+\node[stagebox] (stage3) at (8.5, 1) {};
+\node[above, font=\sffamily\bfseries, text=TUMBlue] at (stage3.north) {Stage 3};
+
+% Stage 3 contents
+\node[inner=TUMGreen] (s3opt) at (8.5, 2.5) {Optimize};
+\node[inner=gray] (s3pv) at (8.5, 1.5) {PV: $P_3^*$};
+\node[inner=gray] (s3ess) at (8.5, 0.7) {ESS: $E_3^*$};
+\node[constraint] (s3co2) at (8.5, -0.3) {CO$_2 \leq C_3$};
+
+% ============================================
+% STAGE N (Final)
+% ============================================
+
+\node[stagebox] (stageN) at (12.5, 1) {};
+\node[above, font=\sffamily\bfseries, text=TUMBlue] at (stageN.north) {Stage $N$};
+
+% Stage N contents
+\node[inner=TUMGreen] (sNopt) at (12.5, 2.5) {Optimize};
+\node[inner=gray] (sNpv) at (12.5, 1.5) {PV: $P_N^*$};
+\node[inner=gray] (sNess) at (12.5, 0.7) {ESS: $E_N^*$};
+\node[constraint] (sNco2) at (12.5, -0.3) {CO$_2 \leq C_N$};
+
+% ============================================
+% STAGE LINKING ARROWS
+% ============================================
+
+% Stage 1 → Stage 2
+\draw[stagearrow] (stage1.east) -- (stage2.west);
+
+% Linking constraint label 1→2
+\draw[linkingarrow] (s1pv.east) -- ++(0.6,0) |- ($(s2opt.west)+(-0.3,0.2)$)
+    node[pos=0.25, above, font=\tiny\sffamily, text=TUMOrange] {$P_{exist} \geq P_1^*$};
+\draw[linkingarrow] (s1ess.east) -- ++(0.4,0) |- ($(s2opt.west)+(-0.3,-0.2)$);
+
+% Stage 2 → Stage 3
+\draw[stagearrow] (stage2.east) -- (stage3.west);
+
+% Linking constraint label 2→3
+\draw[linkingarrow] (s2pv.east) -- ++(0.6,0) |- ($(s3opt.west)+(-0.3,0.2)$)
+    node[pos=0.25, above, font=\tiny\sffamily, text=TUMOrange] {$P_{exist} \geq P_2^*$};
+\draw[linkingarrow] (s2ess.east) -- ++(0.4,0) |- ($(s3opt.west)+(-0.3,-0.2)$);
+
+% Stage 3 → ... → Stage N
+\draw[stagearrow] (stage3.east) -- ++(0.5,0);
+\draw[stagearrow] (11,1) -- (stageN.west);
+
+% ============================================
+% DECARBONIZATION PATHWAY (CO2 limits decreasing)
+% ============================================
+
+\draw[TUMOrange, line width=1.5pt, dashed] 
+    (s1co2.south) -- ++(0,-0.8) -- ++(4,0) -- ($(s2co2.south)+(0,-0.8)$) -- (s2co2.south);
+\draw[TUMOrange, line width=1.5pt, dashed] 
+    (s2co2.south) -- ++(0,-0.8) -- ++(4,0) -- ($(s3co2.south)+(0,-0.8)$) -- (s3co2.south);
+
+\node[font=\scriptsize\sffamily, text=TUMOrange, anchor=north] at (6.5, -1.5) {$C_1 > C_2 > C_3 > \cdots > C_N$ (Decarbonization pathway)};
+
+% ============================================
+% LINKING CONSTRAINT BOX
+% ============================================
+
+\node[draw=TUMOrange, fill=TUMOrange!10, rounded corners=5pt, 
+      minimum width=5cm, minimum height=2cm, line width=1.5pt,
+      align=left, font=\small\sffamily] (linkbox) at (14.5, 4.5) {
+    \textbf{Stage Linking Constraints:}\\[5pt]
+    $P_t^{exist} = P_{t-1}^{total}$\\[2pt]
+    $E_t^{exist} = E_{t-1}^{total}$\\[2pt]
+    $P_t^{total} = P_t^{exist} + P_t^{invest}$
+};
+
+% ============================================
+% MATHEMATICAL FORMULATION
+% ============================================
+
+\node[draw=TUMBlue, fill=TUMBlue!8, rounded corners=5pt,
+      minimum width=6cm, minimum height=1.8cm, line width=1pt,
+      align=left, font=\small\sffamily] (mathbox) at (6.5, 5.5) {
+    \textbf{Stage $t$ Optimization:}\\[3pt]
+    $\min \sum_i (\text{CAPEX}_i + \text{OPEX}_i)$\\[2pt]
+    s.t. $\sum E_{grid} \cdot f_{CO_2} \leq C_t$, \quad $P^{total} \geq P^{exist}$
+};
+
+% ============================================
+% LEGEND
+% ============================================
+
+\node[anchor=north west] at (-1, -4.5) {
+    \begin{tikzpicture}[scale=0.85]
+        \draw[stagearrow] (0,0) -- (1,0);
+        \node[anchor=west, font=\scriptsize\sffamily] at (1.2,0) {Stage progression};
+        
+        \draw[linkingarrow] (4,0) -- (5,0);
+        \node[anchor=west, font=\scriptsize\sffamily] at (5.2,0) {Capacity inheritance};
+        
+        \node[inner=TUMGreen, minimum width=1.5cm, minimum height=0.5cm, font=\tiny] at (9,0) {Optimize};
+        \node[anchor=west, font=\scriptsize\sffamily] at (10,0) {MILP solve};
+        
+        \node[constraint, minimum width=1.5cm, minimum height=0.5cm, font=\tiny] at (13,0) {CO$_2$ limit};
+        \node[anchor=west, font=\scriptsize\sffamily] at (14,0) {Emission cap};
+    \end{tikzpicture}
+};
+
+\end{tikzpicture}
+\caption{Multi-stage optimization flow showing sequential investment decisions across $N$ stages. Each stage solves a MILP optimization subject to CO$_2$ emission limits (orange boxes) that decrease over time following a decarbonization pathway. Stage linking constraints (dashed arrows) ensure that previously installed capacity carries forward, i.e., $P_t^{exist} \geq P_{t-1}^{total}$.}
+\label{fig:stride-stage-flow}
+\end{figure}
