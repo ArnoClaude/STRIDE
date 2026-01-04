@@ -1,6 +1,5 @@
 # Grid Connection CAPEX (Baukostenzuschuss)
 
-> Last updated: 2025-12-30
 
 ---
 

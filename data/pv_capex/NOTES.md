@@ -1,6 +1,5 @@
 # PV CAPEX Data
 
-> Last updated: 2025-12-22
 
 ---
 

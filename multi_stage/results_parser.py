@@ -177,9 +177,9 @@ class ResultsParser:
                                            if get_value('pv', 'e_pro_sim') else 0)
 
         # CO2 emissions (simulation period)
-        # Note: Using grid CO2 factor if available, defaulting to 0.4 kg/kWh
+        # Note: Using grid CO2 factor if available, defaulting to 0.35 kg/kWh (UBA 2024: 363 g/kWh)
         results['co2_sim_kg'] = ((get_value('grid', 'e_del_sim') / 1000 *
-                                 (get_value('grid', 'co2_spec_g2s') or 0.4))
+                                 (get_value('grid', 'co2_spec_g2s') or 0.35))
                                 if get_value('grid', 'e_del_sim') else 0)
 
         # Calculate project-level CO2 emissions (extrapolated from simulation)

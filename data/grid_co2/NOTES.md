@@ -1,6 +1,108 @@
 # Grid CO2 Emission Factor Data
 
-> Last updated: 2025-12-22
+---
+
+## Annual Average vs Hourly CO2 Factors
+
+### Justification for Using Fixed Annual Average
+
+**Question**: Is using a fixed annual average CO2 factor (e.g., 0.35 kg/kWh) acceptable, or do we need hourly time-varying factors?
+
+### Literature Review
+
+#### 1. Germany 2024 Official Value
+
+**Source:** Umweltbundesamt (UBA), "Entwicklung der spezifischen Treibhausgas-Emissionen des deutschen Strommix in den Jahren 1990 - 2024", Climate Change 13/2025
+**File:** `sources/uba_strommix_emissionen_1990_2024.pdf`
+**Page 21:**
+> "Die vorläufigen Ergebnisse für 2023 weisen einen Anstieg auf 386 g CO2/kWh aus, während für 2024 auf der Grundlage von geschätzten Daten **363 g CO2/kWh** ermittelt werden."
+
+| Year | CO2 Factor (g/kWh) | Status | Source |
+|------|-------------------|--------|--------|
+| 2022 | 433 | Final | UBA p.21 |
+| 2023 | 386 | Preliminary | UBA p.21 |
+| 2024 | **363** | Estimated | UBA p.21 |
+| 2025 | ~350 | Extrapolated | Trend-based |
+
+#### 2. BAFA Official Emission Factors (August 2024)
+
+**Source:** Bundesamt für Wirtschaft und Ausfuhrkontrolle, "Informationsblatt CO2-Faktoren", August 2024
+**File:** `sources/bafa_co2_faktoren_2024.pdf`
+**Page 9, Table 2 "CO2-Faktoren der Energieträger":**
+
+| Energieträger | CO2-Faktor (tCO2/MWh) |
+|---------------|-------------------------|
+| El. Strom (Effizienzmaßnahme) | 0.435 |
+| El. Strom (Energieträgerwechsel) | 0.107 |
+| El. Strom (Wechsel zu Erneuerbaren Quellen) | 0.000 |
+
+**Note:** BAFA uses different factors depending on application context. The "Effizienzmaßnahme" factor (435 g/kWh) is based on 2021 grid average and is used for efficiency improvements. The "Energieträgerwechsel" factor (107 g/kWh) is used for fuel switching to electricity and is based on a forward-looking model.
+
+#### 3. Depot Overnight Charging: Annual Average is CONSERVATIVE
+
+**Source:** Transport & Environment / Fraunhofer ISI / Oeko-Institut, "Truck Depot Charging: Final Report", February 2025
+**File:** `sources/te_truck_depot_charging_2025.pdf`
+
+**Page 41, Section 3.1.3 "Vehicle Usage Patterns":**
+> "The stakeholders involved confirmed that in regional delivery transport, it is common for BET to spend long periods at night in the depot, which can then be used for battery charging."
+
+**Page 72, Section 5.1.3 "Vehicle Usage Pattern" (UK chapter):**
+> "In regional transport, vehicles usually return to the depot at night. [...] According to the Road Haulage Association (RHA), 70% of UK electric trucks currently return to the depot overnight to charge."
+
+**Page 41, Future prospects:**
+> "According to a manufacturer's forecast, 90% of urban distribution transport and regional transport can be carried out with depot charging."
+
+**Implication for our model**:
+- Truck depots charge primarily **overnight** (when vehicles return)
+- Nighttime CO2 intensity is **higher** than annual average (no solar generation)
+- Using annual average (0.35 kg/kWh) is therefore **conservative** (underestimates actual emissions)
+- Our CO2 constraint will be **slightly easier** to meet in reality
+
+#### 4. Hourly vs Annual: Academic Literature
+
+**Source:** Noussan, M., & Neirotti, F. (2020). "Cross-Country Comparison of Hourly Electricity Mixes for EV Charging Profiles." Energies, 13(10), 2527.
+**DOI:** https://doi.org/10.3390/en13102527
+**File:** `sources/energies-13-02527.pdf`
+
+**Page 1, Abstract:**
+> "The results show that the variability related to charging proﬁles is generally limited, with an average variation range of **6%** for any given country and year, while in several countries the variability from one year to another is much larger, with an average range of **18%** for any given country and charging proﬁle."
+
+**Page 11, Discussion:**
+> "all the other combinations of country and year show ranges of variation (calculated as the ratio between the difference of maximum and minimum values and the average value) lower than 10% (with an average value of **6%** and a minimum value of 1%). On the other hand, when considering the variations of the emission factor of each charging proﬁle over the years for any given country, the ranges of variations are signiﬁcantly higher. [...] the average range of variation is **18%**, much higher than the 6% variation associated to the proﬁles."
+
+**Key finding**: The difference between different charging profiles (time-of-day optimization) is only ~6% within a given country-year. Year-to-year and cross-country variations (~18%) dominate.
+
+#### 5. NREL Heavy-Duty Vehicle Charging (November 2024)
+
+**Source:** NREL, "Electric Medium- and Heavy-Duty Vehicle Charging Infrastructure Attributes for National Analysis", November 2024
+**File:** `sources/nrel_mhd_charging_infrastructure_2024.pdf`
+
+**Page 12, Section 3 "MD/HD Vehicle Home Base Analysis":**
+> "Although much of the MD/HD vehicle charging is anticipated to occur at depot locations, such as the one pictured in Figure 5, during a typical overnight dwell (McKenzie et al. 2021), larger operating ranges will likely have to rely on some en route or destination charging to satisfy longer trips."
+
+**Page 14, Figure 6 caption:**
+> "The majority of MD/HD vehicles—both freight and non-freight and across all ranges of operation—are parked at commercial or industrial locations (likely a depot) while off-duty. The percentage of non-personal vehicles with a commercial/industrial home base varies between 70% and 83% for Class 4–6 MDVs and 72% and 91% for HDVs."
+
+**Page 16, Section 4:**
+> "Although most MD/HD vehicle charging is expected to occur at a home base or depot (McKenzie et al. 2021; Lowell and Culkin 2021), some MD/HD vehicles—mostly HD—will need en route charging to enable longer-distance trips."
+
+**Page 12, California projections:**
+> "the California Energy Commission Assembly Bill 2127 projected approximately 95% of MD/HD vehicle chargers as depot chargers in 2030 and roughly 97% in 2035"
+
+### Decision: Use Fixed Annual Average
+
+**Justification**:
+1. **Standard practice** per UBA methodology for German grid emissions
+2. **Conservative** for overnight depot charging (actual nighttime emissions are higher due to lack of solar)
+3. **Difference is ~6%** within country-year for different charging profiles (Noussan & Neirotti 2020, p.11)
+4. **CO2 is a constraint**, not objective - minor impact on optimization
+5. **REVOL-E-TION limitation**: Would require code modification to support timeseries
+
+**Recommendation for thesis**:
+- Use fixed **0.35 kg/kWh** (350 g/kWh) for 2025 baseline
+- This is conservative vs. UBA 2024 actual (363 g/kWh)
+- Acknowledge limitation in Discussion chapter
+- Include CO2 factor in sensitivity analysis (±30%)
 
 ---
 
@@ -17,7 +119,10 @@ There is no single source stating "grid electricity = X% of depot emissions." In
 
 **Source:** NREL, "Life Cycle Greenhouse Gas Emissions from Solar Photovoltaics", November 2012
 **File:** `sources/nrel_pv_lifecycle_ghg.pdf`
-> "Median values for both PV technologies are below **50 g CO2e/kWh**." (Page 2)
+**Page 2:**
+> "Median values for both PV technologies are below **50 g CO2e/kWh**."
+
+> "Harmonization has a small effect on the central estimate for each technology, reducing the median by approximately 20%. Median values for both PV technologies are below 50 g CO2e/kWh."
 
 3. **ESS lifecycle emissions** (estimate): ~100 kg CO2/kWh capacity over 15-year lifetime
 
@@ -150,12 +255,22 @@ This confirms the declining trend in absolute emissions, consistent with the UBA
 
 | File | Description |
 |------|-------------|
-| `sources/uba_strommix_emissionen_1990_2024.pdf` | **Primary** - Emission factors 1990-2024 (verified) |
-| `sources/fraunhofer_ise_electricity_generation_2024.pdf` | Absolute CO2 trends, renewables share |
-| `sources/agora_energiewende_2024_presentation.pdf` | Sector emissions, no g/kWh projections |
-| `sources/dena_leitstudie_summary_en.pdf` | Scenario study, electricity mix but no g/kWh |
+| `sources/uba_strommix_emissionen_1990_2024.pdf` | UBA emission factors 1990-2024, Pages 9 & 21 (primary) |
+| `sources/bafa_co2_faktoren_2024.pdf` | BAFA official CO2 factors Aug 2024, Page 9 |
+| `sources/te_truck_depot_charging_2025.pdf` | T&E/Fraunhofer depot charging Feb 2025, Pages 41 & 72 |
+| `sources/nrel_mhd_charging_infrastructure_2024.pdf` | NREL MHD charging infrastructure Nov 2024, Pages 12-16 |
+| `sources/energies-13-02527.pdf` | Noussan & Neirotti (2020) hourly vs annual CO2, Pages 1 & 11 |
+| `sources/fraunhofer_ise_electricity_generation_2024.pdf` | Fraunhofer renewables share 2024, Page 1-2 |
+| `sources/agora_energiewende_2024_presentation.pdf` | Sector emissions overview |
+| `sources/dena_leitstudie_summary_en.pdf` | Scenario study, electricity mix |
 | `sources/cleanenergywire_ghg_targets.html` | Policy targets (% reduction, renewables share) |
-| `sources/bmwk_electricity_2030.pdf` | BMWK policy paper (no specific g/kWh) |
-| `sources/eea_emission_intensity.html` | EU context, no Germany-specific projections |
-| `sources/nrel_pv_lifecycle_ghg.pdf` | PV lifecycle emissions (~40 g CO2/kWh) |
+| `sources/bmwk_electricity_2030.pdf` | BMWK policy paper |
+| `sources/nrel_pv_lifecycle_ghg.pdf` | PV lifecycle emissions (~50 g CO2e/kWh), Page 2 |
 | `sources/ukgbc_operational_embodied_carbon.pdf` | Operational vs embodied carbon split |
+
+### External References
+
+| Citation | DOI/URL |
+|----------|---------|
+| Noussan & Neirotti (2020) "Cross-Country Comparison of Hourly Electricity Mixes for EV Charging Profiles" | https://doi.org/10.3390/en13102527 |
+| GHG Protocol Scope 2 Guidance (2015) | https://ghgprotocol.org/scope-2-guidance |

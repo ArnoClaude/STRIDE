@@ -133,8 +133,11 @@ class SequentialStageOptimizer:
 
                 # 5. Print summary
                 self._print_stage_summary(year, stage_result)
+                
+                # 6. Print trajectory across all completed stages
+                self._print_trajectory_summary()
 
-                # 6. Stop if infeasible (can't continue to next stage)
+                # 7. Stop if infeasible (can't continue to next stage)
                 if stage_result.get('status') == 'infeasible':
                     self._print_infeasibility_diagnostic(year)
                     return {
@@ -306,6 +309,87 @@ class SequentialStageOptimizer:
         grid_g2s = results.get('grid_size_g2s', 0) or 0
         if grid_g2s > 0 and 'grid' not in [b.name for b in self.config.investable_blocks]:
             print(f"  └─ Grid g2s: {grid_g2s/1000:.1f} kW")
+
+    def _print_trajectory_summary(self):
+        """
+        Print trajectory of key metrics across ALL completed stages.
+        
+        Shows absolute values and percentage changes between consecutive stages
+        for each metric that changes over time.
+        """
+        if len(self.stage_results) < 2:
+            return  # Need at least 2 stages to show trajectory
+        
+        years = sorted(self.stage_results.keys())
+        
+        print(f"\n{'─'*80}")
+        print(f"TRAJECTORY: Stages {years[0]} → {years[-1]}")
+        print(f"{'─'*80}")
+        
+        # Define metrics to track with display formatting
+        metrics = [
+            ('pv_size_total', 'PV Total', 'kW', 1000),
+            ('ess_size_total', 'ESS Total', 'kWh', 1000),
+            ('grid_size_g2s', 'Grid Import', 'kW', 1000),
+            ('npv_discounted', 'NPV (disc.)', '€', 1),
+            ('capex_prj', 'CAPEX', '€', 1),
+            ('co2_sim_kg', 'CO2 (sim)', 'kg', 1),
+        ]
+        
+        # Build header row
+        header = f"{'Metric':<15}"
+        for year in years:
+            header += f" │ {year:>10}"
+        print(header)
+        print(f"{'─'*15}" + "─┼───────────" * len(years))
+        
+        # Print each metric row
+        for key, label, unit, divisor in metrics:
+            # Skip if no data for this metric
+            if not any(self.stage_results[y].get(key) for y in years):
+                continue
+            
+            row = f"{label:<15}"
+            prev_val = None
+            
+            for year in years:
+                val = self.stage_results[year].get(key, 0) or 0
+                display_val = val / divisor
+                
+                if unit == '€':
+                    cell = f"{display_val:>10,.0f}"
+                elif unit in ['kW', 'kWh']:
+                    cell = f"{display_val:>10.1f}"
+                else:
+                    cell = f"{display_val:>10,.0f}"
+                
+                row += f" │ {cell}"
+                prev_val = val
+            
+            print(row)
+        
+        # Print percentage changes row for key capacity metrics
+        print(f"{'─'*15}" + "─┼───────────" * len(years))
+        print(f"{'Δ% vs prev':<15}", end="")
+        
+        for i, year in enumerate(years):
+            if i == 0:
+                print(f" │ {'─':>10}", end="")
+            else:
+                prev_year = years[i-1]
+                # Use PV as representative metric for % change
+                curr_pv = self.stage_results[year].get('pv_size_total', 0) or 0
+                prev_pv = self.stage_results[prev_year].get('pv_size_total', 0) or 0
+                
+                if prev_pv > 0:
+                    pct_change = (curr_pv - prev_pv) / prev_pv * 100
+                    print(f" │ {pct_change:>+9.1f}%", end="")
+                elif curr_pv > 0:
+                    print(f" │ {'new':>10}", end="")
+                else:
+                    print(f" │ {'─':>10}", end="")
+        print()
+        print(f"{'─'*80}\n")
 
     def _print_infeasibility_diagnostic(self, year: int):
         """Print diagnostic information for infeasible stage."""

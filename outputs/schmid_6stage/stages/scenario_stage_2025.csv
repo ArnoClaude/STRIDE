@@ -33,7 +33,7 @@ core,ccr,1
 core,eff_dcac,0.95
 core,eff_acdc,0.95
 dem,load_profile,dem_timeseries_test
-dem,consumption_yrl,1575844.735
+dem,consumption_yrl,285971648
 dem,system,ac
 dem,crev_spec,0
 pv,size_existing,0
@@ -58,8 +58,8 @@ grid,capex_existing_s2g,True
 grid,size_s2g_max,equal
 grid,invest_s2g,equal
 grid,system,ac
-grid,peakshaving,
-grid,opex_spec_peak,0
+grid,peakshaving,month
+grid,opex_spec_peak,0.00137825
 grid,capex_spec,0.09896
 grid,mntex_spec,0
 grid,ls,10
@@ -69,7 +69,7 @@ grid,filename_markets,
 grid,res_only,False
 grid,opex_spec_g2s,grid_opex_g2s
 grid,opex_spec_s2g,grid_opex_s2g
-grid,co2_spec_g2s,0.4
+grid,co2_spec_g2s,0.35
 ess,size_existing,0
 ess,capex_existing,True
 ess,size_max,
