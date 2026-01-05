@@ -87,6 +87,14 @@ Leistungspreis_annual = Peak_demand (kW) × Leistungspreis (EUR/kW/a)
 
 REVOL-E-TION parameter: `grid.opex_spec_peak` = **0.19179 EUR/W/year** (high utilization)
 
+### Note on Current STRIDE Configuration
+
+The current STRIDE scenarios use **16.53 EUR/kW/year** (the <2,500 h/a category). This is correct for overnight depot charging, which typically exhibits peaky load profiles:
+- Charging concentrated in ~8-12 hours overnight
+- For a depot with ~1 MW peak and ~1,500 MWh annual consumption: utilization = 1,500 h/a → <2,500 h/a category
+
+The low utilization tariff (high Arbeitspreis, low Leistungspreis) is appropriate because overnight depot charging has high peak-to-average ratios.
+
 ---
 
 ## Implications for Depot Charging

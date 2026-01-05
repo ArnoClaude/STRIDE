@@ -40,6 +40,12 @@ REVOL-E-TION parameter: `grid.capex_spec` = **0.09896 EUR/W**
 - Values are net; add 19% VAT for gross prices
 - For EV charging (steuerbare Verbrauchseinrichtungen): 20% reduction per BNetzA BK8-22/010-A
 
+### Regional Applicability
+
+**Limitation:** The source (ÜZ Mainfranken eG) is a utility in the Mainfranken (Main-Franconia) region of northern Bavaria. BKZ values are regulated and vary by distribution network operator.
+
+**Recommendation:** Note this limitation in the thesis but proceed with this value as representative. BKZ values across Germany typically range from ~80-120 EUR/kW for medium voltage connections, making this value (~99 EUR/kW) a reasonable estimate for Bavarian depots.
+
 ---
 
 ## Sources
