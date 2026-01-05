@@ -1,0 +1,72 @@
+# Sensitivity: High CO2 Factor (0.45 kg/kWh)
+# Base: schmid_6stage.yaml
+#
+# Rationale: Conservative scenario with more fossil fuel in grid mix
+# Represents delayed coal phase-out or nighttime charging bias
+#
+# Parameter changed: co2_spec_g2s in scenarios.csv: 0.35 → 0.45
+# NOTE: This requires modifying the scenarios.csv, not just this config.
+#       Use inputs/schmid/scenarios_co2_high.csv with this config.
+
+sensitivity:
+  parameter: grid.co2_spec_g2s
+  base_value: 0.35
+  test_value: 0.45
+  description: "High CO2 factor - conservative/nighttime charging"
+  scenarios_file: inputs/schmid/scenarios_co2_high.csv
+
+stages:
+  years: [2025, 2030, 2035, 2040, 2045, 2050]
+  duration_years: 5
+
+technology_costs:
+  pv:
+    base_year: 2025
+    base_cost_per_w: 1.00
+    annual_decline_rate: 0.03
+  ess:
+    base_year: 2025
+    base_cost_per_wh: 0.50
+    annual_decline_rate: 0.05
+
+demand:
+  base_year: 2025
+  base_num_vehicles: 84
+  annual_growth_rate: 0.02
+  scale_bev_log: true
+
+emissions:
+  pathway_type: linear
+  base_year: 2025
+  base_limit_kg: 200000
+  final_year: 2050
+  final_limit_kg: 20000
+
+economics:
+  wacc: 0.035
+  invest_budget_per_kwh: 5.0
+
+blocks:
+  investable:
+    - name: pv
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: ess
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: grid
+      cost_param: capex_spec
+      size_param: size_invest_g2s
+  demand:
+    - name: bev
+      size_param: num
+    - name: dem
+      consumption_param: consumption_yrl
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv
+  results_base_dir: outputs
+
+output:
+  stage_scenarios_dir: outputs/sensitivity/co2_factor_high/stages
+  summary_output_dir: outputs/sensitivity/co2_factor_high

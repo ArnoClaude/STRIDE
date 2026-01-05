@@ -5,11 +5,11 @@ scenario,sim_duration,50
 scenario,prj_duration,5
 scenario,compensate_sim_prj,True
 scenario,strategy,go
-scenario,len_ph,
-scenario,len_ch,
+scenario,len_ph,None
+scenario,len_ch,None
 scenario,truncate_ph,True
-scenario,invest_max,31500000.0
-scenario,co2_max,200000
+scenario,invest_max,None
+scenario,co2_max,None
 scenario,wacc,0.035
 scenario,currency,EUR
 scenario,latitude,48.3705
@@ -19,7 +19,7 @@ scenario,filename_mapper,mapper_timeframe
 scenario,blocks,"{'dem': 'FixedDemand', 'grid': 'GridConnection', 'pv': 'PVSource', 'ess': 'StationaryEnergyStorage', 'bev': 'VehicleCommoditySystem'}"
 core,size_acdc_existing,0
 core,capex_existing_acdc,True
-core,size_acdc_max,
+core,size_acdc_max,None
 core,invest_acdc,True
 core,size_dcac_existing,equal
 core,capex_existing_dcac,True
@@ -38,7 +38,7 @@ dem,system,ac
 dem,crev_spec,0
 pv,size_existing,0
 pv,capex_existing,True
-pv,size_max,
+pv,size_max,None
 pv,invest,True
 pv,data_source,PVGIS API
 pv,filename,pvgis_api_params
@@ -51,7 +51,7 @@ pv,ccr,1
 pv,eff,0.95
 grid,size_g2s_existing,0
 grid,capex_existing_g2s,True
-grid,size_g2s_max,
+grid,size_g2s_max,None
 grid,invest_g2s,True
 grid,size_s2g_existing,equal
 grid,capex_existing_s2g,True
@@ -65,14 +65,14 @@ grid,mntex_spec,0
 grid,ls,10
 grid,ccr,1
 grid,eff,1
-grid,filename_markets,
+grid,filename_markets,None
 grid,res_only,False
 grid,opex_spec_g2s,grid_opex_g2s
 grid,opex_spec_s2g,grid_opex_s2g
-grid,co2_spec_g2s,0.35
+grid,co2_spec_g2s,0.45
 ess,size_existing,0
 ess,capex_existing,True
-ess,size_max,
+ess,size_max,None
 ess,invest,True
 ess,system,dc
 ess,res_only,False
@@ -98,14 +98,14 @@ bev,filename,bev_log_test
 bev,num,84
 bev,size_existing,500000
 bev,capex_existing,True
-bev,size_max,
+bev,size_max,None
 bev,invest,False
 bev,lvl_cap,v2s
 bev,mode_scheduling,oc
-bev,forecast_hours,
-bev,power_lim_static,
+bev,forecast_hours,None
+bev,power_lim_static,None
 bev,system,ac
-bev,rex_cs,
+bev,rex_cs,None
 bev,aging,True
 bev,chemistry,lfp
 bev,temp_battery,25
