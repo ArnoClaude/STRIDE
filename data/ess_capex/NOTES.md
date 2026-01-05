@@ -1,5 +1,6 @@
 # ESS/Battery CAPEX Data
 
+**Status:** ✅ VERIFIED
 
 ---
 
@@ -17,7 +18,7 @@
 | **Batteriespeicher für PV-Dach-Großanlagen (30 kWp–1 MWp, 2:1)** | **450** | **800** |
 | Batteriespeicher für PV-Freiflächenanlagen (>1 MWp, 3:2) | 400 | 600 |
 
-### From Page 21:
+### From Page 19:
 > "Für größere PV-Dachanlagen mit Batteriespeicher [...] ergeben sich die Batteriekosten zu **450 bis 800 EUR/kWh**."
 
 > "Für PV-Freiflächenanlagen mit Batteriespeicher [...] wurden Investitionskosten für den Batteriespeicher von **400 bis 600 EUR/kWh** angenommen."

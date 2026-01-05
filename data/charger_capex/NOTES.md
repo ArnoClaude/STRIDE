@@ -1,5 +1,6 @@
 # Charger / EVSE CAPEX
 
+**Status:** ✅ VERIFIED (values) | ⚠️ TODO: Trajectory research needed for 2025-2050
 
 ---
 
@@ -32,7 +33,21 @@
 **For 150 kW DC depot charger: ~60,000 EUR** (400 EUR/kW × 150 kW)
 **For 350 kW DC depot charger: ~86,000 EUR** (247 EUR/kW × 350 kW)
 
-REVOL-E-TION parameter: `bev.capex_charger` = **60000** (for 150 kW)
+REVOL-E-TION parameter: `bev.capex_charger` = **20000** (for 150 kW, assuming 1:3 charger-to-vehicle ratio)
+
+---
+
+## Charger-to-Vehicle Ratio Assumption
+
+**IMPORTANT FOR THESIS**: REVOL-E-TION's `capex_charger` is a per-vehicle cost, not per-charger.
+
+| Assumption | Value |
+|------------|-------|
+| Physical charger cost | 60,000 EUR (150 kW DC) |
+| Charger-to-vehicle ratio | 1:3 (one charger per 3 vehicles) |
+| **Effective per-vehicle cost** | **20,000 EUR** |
+
+This assumption is reasonable for overnight depot charging where vehicles have 8-12 hours dwell time and can share chargers sequentially. Must be stated in thesis methodology.
 
 ---
 

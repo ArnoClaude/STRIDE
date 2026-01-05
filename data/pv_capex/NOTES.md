@@ -1,5 +1,6 @@
 # PV CAPEX Data
 
+**Status:** ✅ VERIFIED
 
 ---
 

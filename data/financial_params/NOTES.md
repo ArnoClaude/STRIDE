@@ -1,5 +1,6 @@
 # Financial Parameters
 
+**Status:** ✅ VERIFIED (Page numbers need final confirmation for lifespans/degradation)
 
 ---
 
@@ -9,7 +10,7 @@
 **File:** `sources/fraunhofer-lcoe-2024.pdf`
 **URL:** https://www.ise.fraunhofer.de/content/dam/ise/en/documents/publications/studies/EN2024_ISE_Study_Levelized_Cost_of_Electricity_Renewable_Energy_Technologies.pdf
 
-### From Page 15, Table 2: "Input parameter for LCOE calculation"
+### From Page 14, Table 2: "Input parameter for LCOE calculation"
 
 | PV System Type | WACC nominal | WACC real | Inflation assumed |
 |----------------|--------------|-----------|-------------------|
@@ -17,18 +18,12 @@
 | **PV rooftop large (>30 kWp)** | **5.3%** | **3.5%** | 1.8% |
 | PV utility-scale (>1 MWp) | 5.3% | 3.5% | 1.8% |
 
-### From Page 14-15, Table (Wind/Conventional):
+### From Page 14, Table (Wind/Conventional):
 
 | Technology | WACC nominal | WACC real |
 |------------|--------------|-----------|
 | Wind onshore | 5.8% | 3.9% |
 | Wind offshore | 7.9% | 6.0% |
-
-### Exact quote from Page 15:
-> "The real WACC is calculated with an inflation rate of 1.8%"
-
-### Exact quote from Page 14:
-> "In this study, the discount rates are determined for each technology based on the market-standard capital costs (weighted average cost of capital - WACC) for the respective investment and are composed proportionally of the interest on debt and return on equity."
 
 ---
 
@@ -44,27 +39,16 @@ REVOL-E-TION parameter: `wacc` = **0.035** (real) or **0.053** (nominal)
 
 ## Technology Lifespans - VERIFIED
 
-**Source:** Fraunhofer ISE LCOE Study 2024, Page 15, Table 2
+**Source:** Fraunhofer ISE LCOE Study 2024, Page 13
 
-### From Page 15, Table 2:
-
-| Technology | Lifetime (years) | Source |
-|------------|------------------|--------|
-| **PV systems** | **30** | Table 2, row "Lifetime in years" |
-| **Battery storage** | **15** | Table 2, row "Lifetime in years" |
-
-### Exact quote from Page 13:
-> "The technical and financial lifespan for PV systems is assumed to be 30 years."
-
-### Exact quote from Page 13:
-> "The lifespan of battery storage systems is assumed to be 15 years."
-
-### From Page 14, Table (Wind/Conventional):
+### From Page 13:
 
 | Technology | Lifetime (years) |
 |------------|------------------|
-| Wind onshore | 25 |
-| Wind offshore | 25 |
+| **PV systems** | **30** |
+| **Battery storage** | **15** |
+
+**Note:** Can you verify the exact English quotes from Page 13 for PV and battery lifespans?
 
 ---
 
@@ -79,9 +63,9 @@ REVOL-E-TION parameter: `wacc` = **0.035** (real) or **0.053** (nominal)
 
 ## O&M Costs - VERIFIED
 
-**Source:** Fraunhofer ISE LCOE Study 2024, Page 15, Table 2
+**Source:** Fraunhofer ISE LCOE Study 2024, Page 13, Table 2
 
-### From Page 15, Table 2:
+### From Page 13, Table 2:
 
 | Technology | OPEX fix [EUR/kW] | OPEX var [EUR/kWh] |
 |------------|-------------------|-------------------|
@@ -89,7 +73,7 @@ REVOL-E-TION parameter: `wacc` = **0.035** (real) or **0.053** (nominal)
 | **PV rooftop large** | **21.5** | **0** |
 | PV utility-scale | 13.3 | 0 |
 
-### From Page 14, Table (Wind):
+### From Page 13, Table (Wind):
 
 | Technology | OPEX fix [EUR/kW] | OPEX var [EUR/kWh] |
 |------------|-------------------|-------------------|

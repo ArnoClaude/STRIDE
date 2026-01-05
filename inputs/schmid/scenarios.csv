@@ -118,7 +118,7 @@ bev,soc_target_low,0.8
 bev,soc_return,0.15
 bev,dsoc_buffer,0.05
 bev,capex_glider,172800
-bev,capex_charger,0
+bev,capex_charger,20000
 bev,capex_spec,0.2
 bev,mntex_glider,10420
 bev,opex_spec_dist,0
