@@ -35,6 +35,20 @@ If using nominal values: **WACC nominal = 5.3%**
 
 REVOL-E-TION parameter: `wacc` = **0.035** (real) or **0.053** (nominal)
 
+### Why Use PV WACC for the Entire Model?
+
+STRIDE/REVOL-E-TION optimizes multiple asset types (PV, ESS, chargers, grid connections), yet we apply a single WACC derived from PV financing. This simplification is justified because:
+
+1. **PV+ESS dominate investment costs**: In typical depot scenarios, PV and ESS represent 70-85% of total CAPEX. Grid connection and chargers are smaller components. Using the WACC for the dominant investment is appropriate.
+
+2. **Same financing structure**: A depot operator would likely finance the entire energy infrastructure project together (single loan or investment package), not separately for each component. The blended WACC would naturally weight toward the largest components.
+
+3. **Germany-specific context**: The Fraunhofer WACC values are calibrated for German renewable energy projects in 2024. Since STRIDE models German freight depots, this is directly applicable. Other countries would have different risk profiles and financing costs.
+
+4. **Standard practice**: Energy system optimization models (TIMES, PyPSA, oemof) typically use a single discount rate. Component-specific WACCs add complexity without commensurate accuracy gains.
+
+5. **Conservative choice**: The 3.5% real WACC for large PV rooftop is lower than the 3.9% for onshore wind or 6.0% for offshore wind. For a mixed infrastructure project, this represents a slightly favorable financing assumption.
+
 ---
 
 ## Technology Lifespans - VERIFIED

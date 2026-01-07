@@ -56,6 +56,11 @@ class SequentialStageOptimizer:
         self.output_dir = output_dir
         self.scenario_column = scenario_column
 
+        # Override config paths if custom output_dir is specified
+        # This ensures stages/ goes inside the CLI-specified output dir
+        self.config.stage_scenarios_dir = self.output_dir / "stages"
+        self.config.summary_output_dir = self.output_dir
+
         # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
