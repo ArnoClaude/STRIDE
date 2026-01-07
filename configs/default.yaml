@@ -58,9 +58,9 @@ blocks:
 # REVOL-E-TION paths
 revoletion:
   settings_path: "inputs/schmid/settings.csv"
-  results_base_dir: "outputs"
+  results_base_dir: "runs"
 
-# Output paths
+# Output paths (overridden by CLI --name option)
 output:
-  stage_scenarios_dir: "outputs/default/stages"
-  summary_output_dir: "outputs/default"
+  stage_scenarios_dir: "runs/default/stages"
+  summary_output_dir: "runs/default"

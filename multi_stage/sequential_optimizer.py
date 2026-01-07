@@ -11,10 +11,13 @@ Thesis: STRIDE - Sequential Temporal Resource Investment for Depot Electrificati
 """
 
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, Optional
+
+import pandas as pd
 
 from .config_loader import MultiStageConfig
 from .scenario_builder import ScenarioBuilder
@@ -37,7 +40,8 @@ class SequentialStageOptimizer:
         config: MultiStageConfig,
         template_scenario_path: Path,
         output_dir: Path,
-        scenario_column: str = None
+        scenario_column: str = None,
+        run_name: str = None
     ):
         """
         Parameters:
@@ -50,22 +54,29 @@ class SequentialStageOptimizer:
             Directory for saving results
         scenario_column : str, optional
             Which column from template to use (default: first scenario column)
+        run_name : str, optional
+            Name of this run (for logging/display)
         """
         self.config = config
         self.template_scenario_path = template_scenario_path
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir).resolve()
         self.scenario_column = scenario_column
+        self.run_name = run_name or output_dir.name
 
-        # Override config paths if custom output_dir is specified
-        # This ensures stages/ goes inside the CLI-specified output dir
+        # Override config paths - all outputs go inside the run directory
         self.config.stage_scenarios_dir = self.output_dir / "stages"
         self.config.summary_output_dir = self.output_dir
+        
+        # REVOL-E-TION outputs will go here (contained within run directory)
+        self.revoletion_output_dir = self.output_dir / "revoletion"
 
-        # Create output directory
+        # Create output directories
         self.output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Create generated scenarios directory
         self.config.stage_scenarios_dir.mkdir(parents=True, exist_ok=True)
+        self.revoletion_output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create per-run settings.csv that points to our contained output directory
+        self.run_settings_path = self._create_run_settings()
 
         # Initialize helper classes (config-driven)
         self.scenario_builder = ScenarioBuilder(template_scenario_path, config)
@@ -91,6 +102,48 @@ class SequentialStageOptimizer:
         # ScenarioBuilder._validate_template() checks required blocks exist
 
         print(f"✓ Setup validation passed")
+
+    def _create_run_settings(self) -> Path:
+        """
+        Create a per-run settings.csv that directs REVOL-E-TION outputs
+        into the run directory.
+        
+        This solves the scattered output problem - REVOL-E-TION will now
+        save its timestamped folders inside runs/<name>/revoletion/
+        
+        Returns:
+        --------
+        Path : Path to generated settings.csv
+        """
+        # Read original settings
+        settings_df = pd.read_csv(self.config.revoletion_settings_path)
+        
+        # Update path_output_data to point to our contained directory
+        output_mask = settings_df['key'] == 'path_output_data'
+        if output_mask.any():
+            settings_df.loc[output_mask, 'value'] = str(self.revoletion_output_dir)
+        else:
+            # Add the row if it doesn't exist
+            new_row = pd.DataFrame({'key': ['path_output_data'], 'value': [str(self.revoletion_output_dir)]})
+            settings_df = pd.concat([settings_df, new_row], ignore_index=True)
+        
+        # Also update path_input_data to be absolute (in case relative path breaks)
+        input_mask = settings_df['key'] == 'path_input_data'
+        if input_mask.any():
+            original_input_path = settings_df.loc[input_mask, 'value'].values[0]
+            # Resolve relative to original settings location
+            if not Path(original_input_path).is_absolute():
+                resolved_input = (self.config.revoletion_settings_path.parent / original_input_path).resolve()
+                settings_df.loc[input_mask, 'value'] = str(resolved_input)
+        
+        # Save to run directory
+        run_settings_path = self.output_dir / "settings.csv"
+        settings_df.to_csv(run_settings_path, index=False)
+        
+        print(f"  ✓ Created run-specific settings.csv")
+        print(f"    REVOL-E-TION outputs → {self.revoletion_output_dir}")
+        
+        return run_settings_path
 
     def optimize(self) -> Dict:
         """
@@ -223,28 +276,29 @@ class SequentialStageOptimizer:
         """
         print(f"\n2. Running REVOL-E-TION optimization")
 
-        # Build command
+        # Build command - use our run-specific settings.csv
         cmd = [
             sys.executable,  # Use current Python interpreter (from venv)
             '-m', 'revoletion.main',
-            '--settings', str(self.config.revoletion_settings_path.absolute()),
+            '--settings', str(self.run_settings_path.absolute()),
             '--scenario', str(scenario_path.absolute())
         ]
 
-        # Determine working directory (parent of settings file)
-        working_dir = self.config.revoletion_settings_path.parent.parent
+        # Working directory should be repo root for revoletion imports to work
+        working_dir = Path(__file__).parent.parent
 
-        print(f"  - Command: {' '.join(cmd)}")
-        print(f"  - Working dir: {working_dir}")
+        print(f"  - Command: python -m revoletion.main ...")
+        print(f"  - Settings: {self.run_settings_path.name}")
+        print(f"  - Scenario: {scenario_path.name}")
 
         # Run optimization
-        # Timeout: 20 minutes per stage (scaled fleets take longer)
+        # Timeout: 60 minutes per stage (scaled fleets with 100+ vehicles take longer)
         result = subprocess.run(
             cmd,
             cwd=str(working_dir),
             capture_output=True,
             text=True,
-            timeout=1200  # 20 minute timeout
+            timeout=3600  # 60 minute timeout
         )
 
         if result.returncode != 0:
@@ -262,12 +316,12 @@ class SequentialStageOptimizer:
 
         print(f"  ✓ REVOL-E-TION completed successfully")
 
-        # Find results directory (explicit - most recent in results_base_dir)
+        # Find results directory - now contained in our revoletion/ folder
         result_dir = self.results_parser.get_latest_result_dir(
-            self.config.revoletion_results_base_dir
+            self.revoletion_output_dir
         )
 
-        print(f"  ✓ Results directory: {result_dir.name}")
+        print(f"  ✓ Results: revoletion/{result_dir.name}")
 
         return result_dir
 

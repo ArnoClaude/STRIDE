@@ -100,30 +100,46 @@ If using **PyCharm/Jupyter**, configure the project interpreter to use `venv/bin
 # Activate virtual environment
 source venv/bin/activate
 
-# Run 6-stage optimization (2025-2050)
-python3 -m multi_stage.main -c configs/schmid_6stage.yaml -s inputs/schmid/scenarios.csv
+# Run 6-stage optimization (auto-generated run name)
+python3 -m multi_stage.main \
+    -c configs/base/schmid_6stage.yaml \
+    -s inputs/schmid/scenarios/test_50d.csv
+
+# Run with explicit name and type
+python3 -m multi_stage.main \
+    -c configs/base/schmid_6stage.yaml \
+    -s inputs/schmid/scenarios/test_50d.csv \
+    --name my_test_run \
+    --type base
+
+# Sensitivity analysis
+python3 -m multi_stage.main \
+    -c configs/sensitivity/wacc_low.yaml \
+    -s inputs/schmid/scenarios/prod_180d.csv \
+    --type sensitivity
 ```
+
+Each run creates a self-contained directory in `runs/<name>/` with:
+- `manifest.yaml` - Full traceability (inputs, git commit, parameters)
+- `config.yaml` - Copy of config used
+- `scenario_template.csv` - Copy of input scenario
+- `revoletion/` - REVOL-E-TION outputs (contained)
+- `multi_stage_results.json` - Aggregated results
 
 ### Generating Visualizations
 
 ```bash
 # Generate PNG + PDF plots (default)
-python3 -m multi_stage.visualize outputs/schmid_6stage
+python3 -m multi_stage.visualize runs/2026-01-07_base_schmid_test_50d
 
 # Generate only PNG
-python3 -m multi_stage.visualize outputs/schmid_6stage --png
+python3 -m multi_stage.visualize runs/<run_name> --png
 
 # Generate only PDF (vector graphics for thesis)
-python3 -m multi_stage.visualize outputs/schmid_6stage --pdf
-
-# Generate LaTeX/TikZ plots (requires tikzplotlib)
-python3 -m multi_stage.visualize outputs/schmid_6stage --latex
+python3 -m multi_stage.visualize runs/<run_name> --pdf
 
 # Generate all formats
-python3 -m multi_stage.visualize outputs/schmid_6stage --all
-
-# Custom output directory
-python3 -m multi_stage.visualize outputs/schmid_6stage --plot-dir figures/
+python3 -m multi_stage.visualize runs/<run_name> --all
 ```
 
 **Available plots:**
@@ -159,7 +175,12 @@ This diagram shows:
 ```
 STRIDE/
 ├── configs/                    # YAML configuration files for multi-stage runs
-│   └── schmid_6stage.yaml     # Main 6-stage config (2025-2050)
+│   ├── base/                  # Base case configurations
+│   │   └── schmid_6stage.yaml # Main 6-stage config (2025-2050)
+│   ├── sensitivity/           # Sensitivity analysis configs
+│   │   ├── wacc_low.yaml
+│   │   └── ...
+│   └── default.yaml           # Default parameter values
 ├── data/                       # Research data and source documents
 │   ├── grid_co2/              # CO2 emission factors + sources
 │   ├── pv_capex/              # PV cost projections + sources
@@ -169,15 +190,29 @@ STRIDE/
 │   └── .../                   # Other data categories
 ├── inputs/                     # Scenario input files for REVOL-E-TION
 │   └── schmid/                # Schmid depot scenario
-│       ├── scenarios.csv      # Main scenario parameters
 │       ├── settings.csv       # REVOL-E-TION settings
-│       ├── bev_log.csv        # Vehicle charging logs
-│       └── *.csv              # Timeseries data
+│       ├── scenarios/         # Scenario templates
+│       │   ├── test_50d.csv   # 50-day test scenario
+│       │   └── prod_180d.csv  # 180-day production scenario
+│       └── timeseries/        # Time-varying data
+│           ├── bev_log_*.csv  # Vehicle charging logs
+│           ├── dem_*.csv      # Fixed demand profiles
+│           └── grid_opex_*.csv # Electricity prices
+├── runs/                       # All run outputs (self-contained)
+│   └── <run_name>/            # Each run is fully traceable
+│       ├── manifest.yaml      # Traceability: inputs, git, params
+│       ├── config.yaml        # Copy of config used
+│       ├── scenario_template.csv
+│       ├── settings.csv       # Run-specific settings
+│       ├── stages/            # Generated per-stage scenarios
+│       ├── revoletion/        # REVOL-E-TION outputs (contained)
+│       └── plots/
 ├── multi_stage/               # STRIDE multi-stage wrapper code
 │   ├── main.py               # CLI entry point
 │   ├── sequential_optimizer.py
 │   ├── scenario_builder.py
 │   ├── results_parser.py
+│   ├── manifest.py           # Run traceability
 │   ├── visualize.py          # Thesis-quality plotting
 │   └── config_loader.py
 ├── revoletion/                # REVOL-E-TION submodule (modified)
@@ -186,11 +221,7 @@ STRIDE/
 │   │   ├── constraints.py    # CO2 constraint (added)
 │   │   └── simulation.py     # Main simulation loop
 │   └── example/              # Reference examples
-├── outputs/                   # Generated results (gitignored)
-│   └── schmid_6stage/        # Multi-stage run output
-│       ├── stages/           # Per-stage scenario CSVs
-│       ├── plots/            # Generated visualizations
-│       └── *.json, *.csv     # Aggregated results
+├── outputs/                   # Legacy outputs (deprecated, use runs/)
 └── notebooks/                 # Development/testing notebooks
 ```
 

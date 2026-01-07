@@ -367,8 +367,10 @@ class ScenarioBuilder:
         base_filename = df.loc[filename_mask, column].values[0]
 
         # Determine paths
-        # Template is in inputs/schmid/, so bev_log should be there too
-        input_dir = self.template_path.parent
+        # The bev_log filename in scenario might be relative (e.g., "timeseries/bev_log_test")
+        # We need to resolve it relative to the input directory (parent of scenarios/)
+        # Template is in inputs/schmid/scenarios/, input dir is inputs/schmid/
+        input_dir = self.template_path.parent.parent  # Go up from scenarios/ to schmid/
         base_log_path = input_dir / f"{base_filename}.csv"
 
         if not base_log_path.exists():
@@ -391,7 +393,7 @@ class ScenarioBuilder:
 
         # Update scenario to point to new bev_log
         # Compute relative path from input_dir to stage_scenarios_dir
-        # Both are absolute paths from config_loader
+        # input_dir is inputs/schmid/, stage_scenarios_dir is runs/<name>/stages/
         try:
             relative_path = os.path.relpath(
                 self.config.stage_scenarios_dir / new_filename,

@@ -2,7 +2,7 @@ key,value
 solver,gurobi
 parallel,True
 max_process_num,max
-path_input_data,../inputs/schmid
+path_input_data,.
 path_output_data,../outputs
 save_results_timeseries,True
 save_results_dispatch,True

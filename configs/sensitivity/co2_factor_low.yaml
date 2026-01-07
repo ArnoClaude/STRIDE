@@ -65,8 +65,8 @@ blocks:
 
 revoletion:
   settings_path: inputs/schmid/settings.csv
-  results_base_dir: outputs
+  results_base_dir: runs
 
 output:
-  stage_scenarios_dir: outputs/sensitivity/co2_factor_low/stages
-  summary_output_dir: outputs/sensitivity/co2_factor_low
+  stage_scenarios_dir: runs/sensitivity/co2_factor_low/stages
+  summary_output_dir: runs/sensitivity/co2_factor_low

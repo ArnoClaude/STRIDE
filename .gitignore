@@ -33,7 +33,10 @@ Thumbs.db
 # PROJECT-SPECIFIC: Outputs (regenerable from code + inputs)
 # =============================================================================
 
-# STRIDE multi-stage outputs (2.5GB+)
+# STRIDE runs - each run is self-contained (ignore contents, keep README)
+runs/*/
+
+# Legacy STRIDE outputs (deprecated)
 outputs/
 
 # REVOL-E-TION results (5.4GB+)
@@ -57,6 +60,7 @@ multi_stage/generated_scenarios/
 # - configs/ (scenario definitions)
 # - inputs/ (scenario CSVs, timeseries, bev_logs) 
 # - data/ (research notes, source PDFs)
+# - runs/README.md (structure documentation)
 # - multi_stage/ (STRIDE code)
 # - revoletion/revoletion/ (modified REVOL-E-TION core)
 # - revoletion/example/ (reference examples)

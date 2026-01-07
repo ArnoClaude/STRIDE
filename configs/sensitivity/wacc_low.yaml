@@ -62,8 +62,8 @@ blocks:
 
 revoletion:
   settings_path: inputs/schmid/settings.csv
-  results_base_dir: outputs
+  results_base_dir: runs
 
 output:
-  stage_scenarios_dir: outputs/sensitivity/wacc_low/stages
-  summary_output_dir: outputs/sensitivity/wacc_low
+  stage_scenarios_dir: runs/sensitivity/wacc_low/stages
+  summary_output_dir: runs/sensitivity/wacc_low

@@ -1,0 +1,70 @@
+# Schmid Depot Multi-Stage Test Configuration
+# STRIDE - Sequential Temporal Resource Investment for Depot Electrification
+#
+# This config uses values from /data folder with documented sources.
+# Test run: 2 stages (2025, 2030), 50-day simulation
+
+stages:
+  years: [2025, 2030]
+  duration_years: 5
+
+# Technology cost evolution
+# All values from data/ folder with Fraunhofer learning curves
+technology_costs:
+  pv:
+    base_year: 2025
+    base_cost_per_w: 1.00           # data/pv_capex/NOTES.md: Fraunhofer 2024, large rooftop
+    annual_decline_rate: 0.03       # ~15% learning rate → ~3%/yr compound
+  ess:
+    base_year: 2025
+    base_cost_per_wh: 0.50          # data/ess_capex/NOTES.md: Fraunhofer 2024, large systems
+    annual_decline_rate: 0.05       # Fraunhofer Tabelle 8 trajectory
+
+# Fleet demand configuration
+demand:
+  base_year: 2025
+  base_num_vehicles: 84             # Schmid depot actual fleet size
+  annual_growth_rate: 0.02          # 2%/yr realistic fleet expansion
+  scale_bev_log: true               # Enable bev_log scaling for fleet growth
+
+# CO2 emissions pathway
+# Disabled for initial test to avoid infeasibility
+emissions:
+  pathway_type: linear
+  base_year: 2025
+  base_limit_kg: 999999999          # No constraint for test
+  final_year: 2050
+  final_limit_kg: 999999999         # No constraint for test
+
+# Economic parameters
+economics:
+  wacc: 0.035                       # data/financial_params/NOTES.md: Fraunhofer real WACC
+  invest_budget_per_kwh: 5.0        # Investment cap per kWh demand
+
+# Block definitions
+blocks:
+  investable:
+    - name: pv
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: ess
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: grid
+      cost_param: capex_spec        # data/grid_connection_capex/NOTES.md: 98.96 EUR/kW
+      size_param: size_invest_g2s
+  demand:
+    - name: bev
+      size_param: num               # Number of vehicles
+    - name: dem
+      consumption_param: consumption_yrl
+
+# REVOL-E-TION paths (relative to repo root)
+revoletion:
+  settings_path: inputs/schmid/settings.csv
+  results_base_dir: runs  # Note: overridden by CLI
+
+# Output paths (Note: overridden by CLI --name option)
+output:
+  stage_scenarios_dir: runs/schmid_test/stages
+  summary_output_dir: runs/schmid_test
