@@ -8,7 +8,7 @@ scenario,strategy,go
 scenario,len_ph,None
 scenario,len_ch,None
 scenario,truncate_ph,True
-scenario,invest_max,None
+scenario,invest_max,2000000
 scenario,co2_max,None
 scenario,wacc,0.035
 scenario,currency,EUR
@@ -97,7 +97,7 @@ bev,data_source,log
 bev,filename,timeseries/bev_log_test
 bev,num,84
 bev,size_existing,500000
-bev,capex_existing,True
+bev,capex_existing,False
 bev,size_max,None
 bev,invest,False
 bev,lvl_cap,v2s

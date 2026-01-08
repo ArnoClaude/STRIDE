@@ -351,7 +351,7 @@ class SequentialStageOptimizer:
 
             if total > 0:
                 unit = get_unit(block_cfg.name)
-                if unit in ['kW', 'kWh']:
+                if unit in ['kW', 'kWh', 'kWp']:
                     print(f"  │  ├─ {block_cfg.name}: {total/1000:.1f} {unit} total")
                     if new > 0:
                         print(f"  │  │  └─ New: {new/1000:.1f} {unit}")
@@ -390,12 +390,12 @@ class SequentialStageOptimizer:
         
         # Define metrics to track with display formatting
         metrics = [
-            ('pv_size_total', 'PV Total', 'kW', 1000),
-            ('ess_size_total', 'ESS Total', 'kWh', 1000),
-            ('grid_size_g2s', 'Grid Import', 'kW', 1000),
-            ('npv_discounted', 'NPV (disc.)', '€', 1),
-            ('capex_prj', 'CAPEX', '€', 1),
-            ('co2_sim_kg', 'CO2 (sim)', 'kg', 1),
+            ('pv_size_total', 'PV (kWp)', 'kW', 1000),
+            ('ess_size_total', 'ESS (kWh)', 'kWh', 1000),
+            ('grid_size_g2s', 'Grid (kW)', 'kW', 1000),
+            ('npv_discounted', 'NPV (€)', '€', 1),
+            ('capex_prj', 'CAPEX (€)', '€', 1),
+            ('co2_sim_kg', 'CO2 (kg)', 'kg', 1),
         ]
         
         # Build header row

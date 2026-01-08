@@ -499,13 +499,17 @@ class ScenarioBuilder:
         stage_years = self.config.stage_duration_years
         invest_max = annual_energy_demand_kwh * investment_budget_per_kwh * stage_years
 
-        # Update invest_max in scenario
+        # Update invest_max in scenario (only if not explicitly set)
         invest_mask = (df['block'] == 'scenario') & (df['key'] == 'invest_max')
         if invest_mask.any():
             old_val = df.loc[invest_mask, column].values[0]
-            df.loc[invest_mask, column] = invest_max
-            print(f"  - invest_max: {old_val} → ${invest_max:,.0f} "
-                  f"(based on {fleet_size} vehicles × {stage_years} years)")
+            # Only override if the value is NaN/None (not explicitly set)
+            if pd.isna(old_val):
+                df.loc[invest_mask, column] = invest_max
+                print(f"  - invest_max: {old_val} → ${invest_max:,.0f} "
+                      f"(based on {fleet_size} vehicles × {stage_years} years)")
+            else:
+                print(f"  - invest_max: ${float(old_val):,.0f} (explicitly set, not overriding)")
         else:
             # If invest_max row doesn't exist, we should add it
             # But for now, just warn - the template should include it
