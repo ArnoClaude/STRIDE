@@ -146,7 +146,22 @@ Examples:
     shutil.copy(config_path, output_dir / "config.yaml")
     shutil.copy(scenario_path, output_dir / "scenario_template.csv")
     shutil.copy(config.revoletion_settings_path, output_dir / "settings_original.csv")
-    print(f"  ✓ Copied config.yaml, scenario_template.csv, settings_original.csv")
+    
+    # Copy timeseries directory for full reproducibility
+    timeseries_src = scenario_path.parent / "timeseries"
+    if not timeseries_src.exists():
+        # Try parent's timeseries (for scenarios in subdirectory)
+        timeseries_src = scenario_path.parent.parent / "timeseries"
+    
+    if timeseries_src.exists() and timeseries_src.is_dir():
+        timeseries_dst = output_dir / "timeseries"
+        shutil.copytree(timeseries_src, timeseries_dst)
+        ts_count = len(list(timeseries_dst.glob("*.csv")))
+        print(f"  ✓ Copied config.yaml, scenario_template.csv, settings_original.csv")
+        print(f"  ✓ Copied timeseries/ ({ts_count} files)")
+    else:
+        print(f"  ✓ Copied config.yaml, scenario_template.csv, settings_original.csv")
+        print(f"  ⚠ No timeseries directory found at {timeseries_src}")
     
     # Generate initial manifest
     manifest_gen = ManifestGenerator(

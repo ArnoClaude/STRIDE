@@ -367,7 +367,66 @@ class SequentialStageOptimizer:
         # Special display for grid g2s (if not already shown by investable_blocks loop)
         grid_g2s = results.get('grid_size_g2s', 0) or 0
         if grid_g2s > 0 and 'grid' not in [b.name for b in self.config.investable_blocks]:
-            print(f"  └─ Grid g2s: {grid_g2s/1000:.1f} kW")
+            print(f"  │  └─ Grid g2s: {grid_g2s/1000:.1f} kW")
+
+        # Check for binding constraints
+        self._print_binding_constraints(year, results)
+
+    def _print_binding_constraints(self, year: int, results: Dict):
+        """Print diagnostics for binding constraints."""
+        binding = []
+        
+        # Check invest_max constraint
+        capex = results.get('capex_prj') or 0
+        invest_max = results.get('invest_max')
+        if invest_max is None:
+            # Try to get from scenario file
+            invest_max = self._get_stage_invest_max(year)
+        
+        if invest_max and capex > 0:
+            utilization = capex / invest_max
+            if utilization >= 0.99:  # Within 1% of limit
+                binding.append(f"invest_max: ${capex:,.0f} / ${invest_max:,.0f} (100% utilized)")
+            elif utilization >= 0.90:
+                binding.append(f"invest_max: ${capex:,.0f} / ${invest_max:,.0f} ({utilization*100:.0f}% utilized)")
+        
+        # Check CO2 constraint
+        co2_actual = results.get('co2_sim_kg') or 0
+        co2_limit = results.get('co2_limit_kg')
+        if co2_limit is None:
+            co2_limit = self.config.calculate_co2_limit(year)
+        
+        if co2_limit and co2_limit < 999999999 and co2_actual > 0:
+            co2_utilization = co2_actual / co2_limit
+            if co2_utilization >= 0.99:  # Within 1% of limit
+                binding.append(f"CO2 limit: {co2_actual:,.0f} / {co2_limit:,.0f} kg (100% utilized)")
+            elif co2_utilization >= 0.90:
+                binding.append(f"CO2 limit: {co2_actual:,.0f} / {co2_limit:,.0f} kg ({co2_utilization*100:.0f}% utilized)")
+        
+        # Print binding constraints
+        if binding:
+            print(f"  ├─ Binding constraints:")
+            for i, constraint in enumerate(binding):
+                prefix = "└─" if i == len(binding) - 1 else "├─"
+                print(f"  │  {prefix} ⚠️  {constraint}")
+    
+    def _get_stage_invest_max(self, year: int) -> float:
+        """Get invest_max from the stage scenario file."""
+        stage_scenario_path = self.config.stage_scenarios_dir / f"scenario_stage_{year}.csv"
+        if stage_scenario_path.exists():
+            import pandas as pd
+            df = pd.read_csv(stage_scenario_path)
+            mask = (df['block'] == 'scenario') & (df['key'] == 'invest_max')
+            if mask.any():
+                # Find the scenario column (not 'block', 'key', 'unit', 'info')
+                scenario_cols = [c for c in df.columns if c not in ['block', 'key', 'unit', 'info']]
+                if scenario_cols:
+                    val = df.loc[mask, scenario_cols[0]].values[0]
+                    try:
+                        return float(val)
+                    except (ValueError, TypeError):
+                        pass
+        return None
 
     def _print_trajectory_summary(self):
         """

@@ -91,6 +91,34 @@ def get_git_info(repo_path: Path) -> Dict[str, Any]:
         }
 
 
+def get_submodule_info(repo_path: Path, submodule_name: str) -> Dict[str, Any]:
+    """Get git submodule commit information."""
+    try:
+        # Get submodule commit hash
+        result = subprocess.run(
+            ["git", "submodule", "status", submodule_name],
+            cwd=str(repo_path),
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            # Format: " <commit> <path> (<describe>)" or "-<commit> <path>" if not initialized
+            line = result.stdout.strip()
+            # Extract commit hash (first 40 chars after optional prefix)
+            parts = line.split()
+            if parts:
+                commit = parts[0].lstrip('-+')[:40]
+                return {
+                    "commit": commit[:12],
+                    "commit_full": commit,
+                    "initialized": not line.startswith('-')
+                }
+        return {"commit": None, "commit_full": None, "initialized": False}
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return {"commit": None, "commit_full": None, "initialized": False}
+
+
 def get_package_version(package_name: str) -> Optional[str]:
     """Get installed package version."""
     try:
@@ -159,6 +187,12 @@ class ManifestGenerator:
         if not timeseries_dir.exists():
             timeseries_dir = self.scenario_path.parent  # Fallback to scenario dir
         
+        # Compute hashes for all timeseries files
+        timeseries_files = {}
+        if timeseries_dir.exists() and timeseries_dir.is_dir():
+            for ts_file in sorted(timeseries_dir.glob("*.csv")):
+                timeseries_files[ts_file.name] = compute_file_hash(ts_file)
+        
         manifest = {
             "run": {
                 "name": self.run_name,
@@ -181,6 +215,7 @@ class ManifestGenerator:
                     "sha256": compute_file_hash(self.settings_path),
                 },
                 "timeseries_dir": str(timeseries_dir),
+                "timeseries_files": timeseries_files,
             },
             
             "parameters": {
@@ -196,6 +231,8 @@ class ManifestGenerator:
             },
             
             "git": get_git_info(self.repo_root),
+            
+            "revoletion": get_submodule_info(self.repo_root, "revoletion"),
             
             "environment": {
                 "python": platform.python_version(),
