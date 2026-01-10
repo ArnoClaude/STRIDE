@@ -233,24 +233,26 @@ class ScenarioBuilder:
         base_year = self.config.tech_costs[list(self.config.tech_costs.keys())[0]].base_year
         years_elapsed = stage_year - base_year
 
-        if years_elapsed > 0:
-            for tech_name, cost_config in self.config.tech_costs.items():
-                # Calculate new cost
-                new_cost = cost_config.get_cost(stage_year)
+        # Always apply config base costs, even in base year (years_elapsed == 0)
+        # This ensures sensitivity configs with different base_cost are applied
+        for tech_name, cost_config in self.config.tech_costs.items():
+            # Calculate cost for this stage year
+            new_cost = cost_config.get_cost(stage_year)
 
-                # Find matching blocks (pattern match: 'pv' matches 'pv', 'pv1', etc.)
-                matching_blocks = [b for b in self.config.investable_blocks
-                                 if tech_name in b.name]
+            # Find matching blocks (pattern match: 'pv' matches 'pv', 'pv1', etc.)
+            matching_blocks = [b for b in self.config.investable_blocks
+                             if tech_name in b.name]
 
-                for block_cfg in matching_blocks:
-                    mask = (df['block'] == block_cfg.name) & (df['key'] == block_cfg.cost_param)
-                    if mask.any():
-                        old_cost = df.loc[mask, column].values[0]
-                        if pd.notna(old_cost) and old_cost != '' and old_cost != 'None':
-                            old_cost = float(old_cost)
-                            df.loc[mask, column] = new_cost
+            for block_cfg in matching_blocks:
+                mask = (df['block'] == block_cfg.name) & (df['key'] == block_cfg.cost_param)
+                if mask.any():
+                    old_cost = df.loc[mask, column].values[0]
+                    if pd.notna(old_cost) and old_cost != '' and old_cost != 'None':
+                        old_cost = float(old_cost)
+                        df.loc[mask, column] = new_cost
 
-                            # Pretty printing
+                        # Only print if cost actually changed
+                        if abs(old_cost - new_cost) > 0.001:
                             decline_pct = -cost_config.annual_decline_rate * 100
                             if 'pv' in tech_name:
                                 print(f"  - {tech_name.upper()} cost: ${old_cost:.2f}/W → "

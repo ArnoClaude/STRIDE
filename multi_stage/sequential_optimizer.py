@@ -298,7 +298,7 @@ class SequentialStageOptimizer:
             cwd=str(working_dir),
             capture_output=True,
             text=True,
-            timeout=3600  # 60 minute timeout
+            timeout=7200  # 2 hour timeout
         )
 
         if result.returncode != 0:
@@ -448,12 +448,15 @@ class SequentialStageOptimizer:
         print(f"{'─'*80}")
         
         # Define metrics to track with display formatting
+        # Format: (key, label, unit, divisor) - key can be a tuple for computed metrics
         metrics = [
-            ('pv_size_total', 'PV (kWp)', 'kW', 1000),
+            ('pv_size_total', 'PV (kWp)', 'kWp', 1000),
             ('ess_size_total', 'ESS (kWh)', 'kWh', 1000),
-            ('grid_size_g2s', 'Grid (kW)', 'kW', 1000),
+            ('grid_size_g2s', 'Grid cap (kW)', 'kW', 1000),
             ('npv_discounted', 'NPV (€)', '€', 1),
             ('capex_prj', 'CAPEX (€)', '€', 1),
+            ('opex_prj', 'OPEX (€)', '€', 1),
+            (('capex_prj', 'opex_prj'), 'Total cost (€)', '€', 1),  # Computed: CAPEX + OPEX
             ('co2_sim_kg', 'CO2 (kg)', 'kg', 1),
         ]
         
@@ -466,20 +469,30 @@ class SequentialStageOptimizer:
         
         # Print each metric row
         for key, label, unit, divisor in metrics:
-            # Skip if no data for this metric
-            if not any(self.stage_results[y].get(key) for y in years):
-                continue
+            # Handle computed metrics (tuple of keys to sum)
+            if isinstance(key, tuple):
+                # Skip if no data for any component
+                if not any(any(self.stage_results[y].get(k) for k in key) for y in years):
+                    continue
+            else:
+                # Skip if no data for this metric
+                if not any(self.stage_results[y].get(key) for y in years):
+                    continue
             
             row = f"{label:<15}"
             prev_val = None
             
             for year in years:
-                val = self.stage_results[year].get(key, 0) or 0
+                # Handle computed metrics (tuple of keys to sum)
+                if isinstance(key, tuple):
+                    val = sum((self.stage_results[year].get(k, 0) or 0) for k in key)
+                else:
+                    val = self.stage_results[year].get(key, 0) or 0
                 display_val = val / divisor
                 
                 if unit == '€':
                     cell = f"{display_val:>10,.0f}"
-                elif unit in ['kW', 'kWh']:
+                elif unit in ['kW', 'kWh', 'kWp']:
                     cell = f"{display_val:>10.1f}"
                 else:
                     cell = f"{display_val:>10,.0f}"
@@ -491,7 +504,7 @@ class SequentialStageOptimizer:
         
         # Print percentage changes row for key capacity metrics
         print(f"{'─'*15}" + "─┼───────────" * len(years))
-        print(f"{'Δ% vs prev':<15}", end="")
+        print(f"{'Δ PV vs prev':<15}", end="")
         
         for i, year in enumerate(years):
             if i == 0:
