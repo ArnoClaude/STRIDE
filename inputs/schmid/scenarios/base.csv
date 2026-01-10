@@ -1,6 +1,6 @@
 block,key,schmid_test
 scenario,starttime,12.09.2023
-scenario,timestep,15min
+scenario,timestep,1h
 scenario,sim_duration,50
 scenario,prj_duration,5
 scenario,compensate_sim_prj,True
@@ -8,7 +8,7 @@ scenario,strategy,go
 scenario,len_ph,None
 scenario,len_ch,None
 scenario,truncate_ph,True
-scenario,invest_max,None
+scenario,invest_max,2000000
 scenario,co2_max,None
 scenario,wacc,0.035
 scenario,currency,EUR
@@ -18,11 +18,11 @@ scenario,cost_eps,1.00E-8
 scenario,filename_mapper,mapper_timeframe
 scenario,blocks,"{'dem': 'FixedDemand', 'grid': 'GridConnection', 'pv': 'PVSource', 'ess': 'StationaryEnergyStorage', 'bev': 'VehicleCommoditySystem'}"
 core,size_acdc_existing,0
-core,capex_existing_acdc,True
+core,capex_existing_acdc,False
 core,size_acdc_max,None
 core,invest_acdc,True
 core,size_dcac_existing,equal
-core,capex_existing_dcac,True
+core,capex_existing_dcac,False
 core,size_dcac_max,equal
 core,invest_dcac,equal
 core,capex_spec,0.08
@@ -37,7 +37,7 @@ dem,consumption_yrl,285971648
 dem,system,ac
 dem,crev_spec,0
 pv,size_existing,0
-pv,capex_existing,True
+pv,capex_existing,False
 pv,size_max,None
 pv,invest,True
 pv,data_source,PVGIS API
@@ -50,11 +50,11 @@ pv,ls,30
 pv,ccr,1
 pv,eff,0.95
 grid,size_g2s_existing,0
-grid,capex_existing_g2s,True
+grid,capex_existing_g2s,False
 grid,size_g2s_max,None
 grid,invest_g2s,True
 grid,size_s2g_existing,equal
-grid,capex_existing_s2g,True
+grid,capex_existing_s2g,False
 grid,size_s2g_max,equal
 grid,invest_s2g,equal
 grid,system,ac
@@ -71,7 +71,7 @@ grid,opex_spec_g2s,timeseries/grid_opex_g2s
 grid,opex_spec_s2g,timeseries/grid_opex_s2g
 grid,co2_spec_g2s,0.35
 ess,size_existing,0
-ess,capex_existing,True
+ess,capex_existing,False
 ess,size_max,None
 ess,invest,True
 ess,system,dc
@@ -97,7 +97,7 @@ bev,data_source,log
 bev,filename,timeseries/bev_log_test
 bev,num,84
 bev,size_existing,500000
-bev,capex_existing,True
+bev,capex_existing,False
 bev,size_max,None
 bev,invest,False
 bev,lvl_cap,v2s
