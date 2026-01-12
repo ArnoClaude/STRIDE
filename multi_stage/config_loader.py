@@ -75,6 +75,7 @@ class MultiStageConfig:
     # Fields with defaults must come last
     demand_scale_bev_log: bool = True  # Whether to scale bev_log files for fleet growth
     invest_budget_per_kwh: float = 3.0  # $ allowed per kWh of annual fleet energy demand
+    scenario_overrides: Optional[List[Dict[str, Any]]] = None  # Config-based scenario parameter overrides
 
     @classmethod
     def from_yaml(cls, config_path: Optional[str] = None,
@@ -192,7 +193,8 @@ class MultiStageConfig:
             revoletion_settings_path=resolve_path(cfg['revoletion']['settings_path']),
             revoletion_results_base_dir=resolve_path(cfg['revoletion']['results_base_dir']),
             stage_scenarios_dir=resolve_path(cfg['output']['stage_scenarios_dir']),
-            summary_output_dir=resolve_path(cfg['output']['summary_output_dir'])
+            summary_output_dir=resolve_path(cfg['output']['summary_output_dir']),
+            scenario_overrides=cfg.get('scenario_overrides', None)
         )
 
         # Validate

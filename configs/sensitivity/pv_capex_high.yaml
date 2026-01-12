@@ -65,5 +65,5 @@ revoletion:
   results_base_dir: runs
 
 output:
-  stage_scenarios_dir: runs/sensitivity/schmid/pv_capex_high/stages
-  summary_output_dir: runs/sensitivity/schmid/pv_capex_high
+  stage_scenarios_dir: runs/schmid/pv_capex_high/stages
+  summary_output_dir: runs/schmid/pv_capex_high

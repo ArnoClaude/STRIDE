@@ -65,5 +65,5 @@ revoletion:
   results_base_dir: runs
 
 output:
-  stage_scenarios_dir: runs/sensitivity/schmid/ess_capex_low/stages
-  summary_output_dir: runs/sensitivity/schmid/ess_capex_low
+  stage_scenarios_dir: runs/schmid/ess_capex_low/stages
+  summary_output_dir: runs/schmid/ess_capex_low

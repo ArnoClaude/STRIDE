@@ -136,6 +136,9 @@ class ScenarioBuilder:
         # so we need reasonable bounds to prevent unrealistic investment in any single stage
         scenario_df = self._update_invest_max(scenario_df, stage_year, scenario_column)
 
+        # 6. Apply config-based scenario overrides (for sensitivity analysis)
+        scenario_df = self._apply_scenario_overrides(scenario_df, scenario_column)
+
         # Save to output path
         scenario_df.to_csv(output_path, index=False)
         print(f"  ✓ Created scenario file: {output_path.name}")
@@ -516,6 +519,47 @@ class ScenarioBuilder:
             # If invest_max row doesn't exist, we should add it
             # But for now, just warn - the template should include it
             print(f"  ⚠ invest_max not found in template - optimizer may be unbounded!")
+
+        return df
+
+    def _apply_scenario_overrides(self, df: pd.DataFrame, column: str) -> pd.DataFrame:
+        """
+        Apply scenario overrides from config (for sensitivity analysis).
+
+        This allows config files to override specific scenario parameters like:
+        - grid.co2_spec_g2s (CO2 emission factor)
+        - pv.capex_spec (already handled by _update_costs, but can be overridden)
+        - ess.capex_spec (already handled by _update_costs, but can be overridden)
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario template
+        column : str
+            Column to update
+
+        Returns:
+        --------
+        DataFrame : Updated scenario
+        """
+        overrides = getattr(self.config, 'scenario_overrides', None)
+        if not overrides:
+            return df
+
+        print("  - Applying config overrides:")
+        for override in overrides:
+            block = override.get('block')
+            key = override.get('key')
+            value = override.get('value')
+
+            if block and key and value is not None:
+                mask = (df['block'] == block) & (df['key'] == key)
+                if mask.any():
+                    old_val = df.loc[mask, column].values[0]
+                    df.loc[mask, column] = value
+                    print(f"    • {block}.{key}: {old_val} → {value}")
+                else:
+                    print(f"    ⚠ {block}.{key} not found in template")
 
         return df
 

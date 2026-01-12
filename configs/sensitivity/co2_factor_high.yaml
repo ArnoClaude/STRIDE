@@ -4,16 +4,19 @@
 # Rationale: Conservative scenario with more fossil fuel in grid mix
 # Represents delayed coal phase-out or nighttime charging bias
 #
-# Parameter changed: co2_spec_g2s in scenarios.csv: 0.35 → 0.45
-# NOTE: This requires modifying the scenarios.csv, not just this config.
-#       Use inputs/schmid/scenarios_co2_high.csv with this config.
+# Parameter changed: grid.co2_spec_g2s: 0.35 → 0.45
 
 sensitivity:
   parameter: grid.co2_spec_g2s
   base_value: 0.35
   test_value: 0.45
   description: "High CO2 factor - conservative/nighttime charging"
-  scenarios_file: inputs/schmid/scenarios_co2_high.csv
+
+# Scenario parameter overrides (applied during scenario building)
+scenario_overrides:
+  - block: grid
+    key: co2_spec_g2s
+    value: 0.45
 
 stages:
   years: [2025, 2030, 2035, 2040, 2045, 2050]
@@ -68,5 +71,5 @@ revoletion:
   results_base_dir: runs
 
 output:
-  stage_scenarios_dir: runs/sensitivity/co2_factor_high/stages
-  summary_output_dir: runs/sensitivity/co2_factor_high
+  stage_scenarios_dir: runs/schmid/co2_high/stages
+  summary_output_dir: runs/schmid/co2_high
