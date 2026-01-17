@@ -9,149 +9,131 @@ source venv/bin/activate
 
 ---
 
-## New Run System (Recommended)
+## Config Chaining System
 
-Runs are now self-contained in `runs/<name>/` with full traceability.
+Configs are now chained in order: `base.yaml` → `depot` → `scenario/sensitivity`
 
 ### Basic Usage
 
 ```bash
-# Auto-generated run name (recommended)
-python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/test_50d.csv
+# Schmid base run (base + depot)
+python3 -m multi_stage.main -c configs/base.yaml configs/depots/schmid.yaml -s inputs/schmid/scenarios/base.csv --name schmid_base
 
-# Explicit run name
-python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/test_50d.csv \
-    --name my_custom_run_name
+# With scenario override
+python3 -m multi_stage.main -c configs/base.yaml configs/depots/schmid.yaml configs/scenarios/optimistic.yaml -s inputs/schmid/scenarios/base.csv --name schmid_optimistic
 
-# With run type (for organization)
-python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/test_50d.csv \
-    --type base
-```
-
-### Run Types
-
-- `base` - Standard optimization runs (default)
-- `sensitivity` - Parameter sensitivity analysis
-- `test` - Quick test runs
-- `debug` - Debugging runs
-
----
-
-## Base Case Runs
-
-### Test Run (50 simulation days, ~1 hour total)
-
-```bash
-python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/test_50d.csv \
-    --type base
-```
-
-### Production Run (180 simulation days, ~3-4 hours total)
-
-```bash
-python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/prod_180d.csv \
-    --type base
+# With sensitivity override
+python3 -m multi_stage.main -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/wacc_high.yaml -s inputs/schmid/scenarios/base.csv --name schmid_wacc_high
 ```
 
 ---
 
-## Sensitivity Analysis Runs
+## Schmid Depot Runs
+
+### Base Case
 
 ```bash
-# WACC sensitivity
 python3 -m multi_stage.main \
-    -c configs/sensitivity/wacc_low.yaml \
-    -s inputs/schmid/scenarios/prod_180d.csv \
-    --type sensitivity
+    -c configs/base.yaml configs/depots/schmid.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_base
+```
+
+### Scenarios
+
+```bash
+# Pessimistic (no CO2 constraint, constant grid)
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/scenarios/pessimistic.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_pessimistic
+
+# Optimistic (1.5C pathway, CAP grid)
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/scenarios/optimistic.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_optimistic
+```
+
+### Sensitivity Analysis
+
+```bash
+# WACC
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/wacc_low.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_wacc_low
 
 python3 -m multi_stage.main \
-    -c configs/sensitivity/wacc_high.yaml \
-    -s inputs/schmid/scenarios/prod_180d.csv \
-    --type sensitivity
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/wacc_high.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_wacc_high
 
-# PV CAPEX sensitivity
+# PV CAPEX
 python3 -m multi_stage.main \
-    -c configs/sensitivity/pv_capex_low.yaml \
-    -s inputs/schmid/scenarios/prod_180d.csv \
-    --type sensitivity
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/pv_capex_low.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_pv_low
 
-# ESS CAPEX sensitivity
 python3 -m multi_stage.main \
-    -c configs/sensitivity/ess_capex_low.yaml \
-    -s inputs/schmid/scenarios/prod_180d.csv \
-    --type sensitivity
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/pv_capex_high.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_pv_high
 
-# CO2 factor sensitivity (uses different scenario files)
+# ESS CAPEX
 python3 -m multi_stage.main \
-    -c configs/sensitivity/co2_factor_low.yaml \
-    -s inputs/schmid/scenarios/co2_low_prod.csv \
-    --type sensitivity
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/ess_capex_low.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_ess_low
+
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/ess_capex_high.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_ess_high
+
+# CO2 factor
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/co2_factor_low.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_co2_low
+
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/co2_factor_high.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_co2_high
+
+# Charger CAPEX
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/charger_capex_low.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_charger_low
+
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/charger_capex_high.yaml \
+    -s inputs/schmid/scenarios/base.csv --name schmid_charger_high
 ```
 
 ---
 
-## Single-Stage Comparison (REVOL-E-TION Direct)
+## Metzger Depot Runs
 
 ```bash
-# Naive 2025 baseline - runs REVOL-E-TION directly (not STRIDE)
-python -m revoletion.main \
-    --settings inputs/schmid/settings.csv \
-    --scenario inputs/schmid/scenarios/test_50d.csv
+# Base case
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/metzger.yaml \
+    -s inputs/metzger/scenarios/base.csv \
+    --name metzger_base
+
+# With scenario
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/metzger.yaml configs/scenarios/optimistic.yaml \
+    -s inputs/metzger/scenarios/base.csv \
+    --name metzger_optimistic
 ```
 
 ---
 
 ## Visualization Commands
 
-### Generate Plots for a Run
-
 ```bash
-# PNG only (default)
-python3 -m multi_stage.visualize runs/2026-01-07_base_schmid_test_50d
+# Generate plots for a run
+python3 -m multi_stage.visualize runs/schmid_base --png --pdf
 
-# PDF only (vector graphics for thesis)
-python3 -m multi_stage.visualize runs/2026-01-07_base_schmid_test_50d --pdf
-
-# Both PNG and PDF
-python3 -m multi_stage.visualize runs/2026-01-07_base_schmid_test_50d --png --pdf
-```
-
-### Generate Sensitivity Comparison
-
-```bash
-# Compare all sensitivity runs against base
-python3 -m multi_stage.compare_sensitivity \
-    runs/ \
-    runs/2026-01-07_base_schmid_prod_180d
-```
-
----
-
-## Run Output Structure
-
-Each run creates a self-contained directory:
-
-```
-runs/2026-01-07_base_schmid_test_50d/
-├── manifest.yaml              # Full traceability (inputs, git, params)
-├── config.yaml                # Copy of config used
-├── scenario_template.csv      # Copy of input scenario
-├── settings.csv               # Generated settings for REVOL-E-TION
-├── stages/                    # Generated per-stage scenarios
-├── revoletion/                # REVOL-E-TION outputs (contained)
-├── multi_stage_results.json   # Aggregated results
-├── investment_timeline.csv
-└── plots/
+# Compare scenarios
+python3 -m multi_stage.compare \
+    runs/schmid_pessimistic runs/schmid_base runs/schmid_optimistic \
+    -o analysis/schmid/scenarios
 ```
 
 ---
@@ -159,22 +141,21 @@ runs/2026-01-07_base_schmid_test_50d/
 ## Quick Checks
 
 ```bash
-# Check venv is active
-which python3  # Should show .../STRIDE/venv/bin/python3
+# Verify config chaining works
+python3 -c "
+from multi_stage.config_loader import MultiStageConfig
+c = MultiStageConfig.from_yaml_chain(['configs/base.yaml', 'configs/depots/schmid.yaml'])
+print(f'Fleet: {c.demand_base_num_vehicles}, WACC: {c.wacc}, Pathway: {c.emissions_pathway_type}')
+"
 
-# Verify REVOL-E-TION installed
-python3 -c "import revoletion; print('OK')"
+# List configs
+find configs -name "*.yaml" | sort
 
-# List recent runs
+# Check venv
+which python3
+
+# List runs
 ls -lt runs/ | head -10
-
-# View a run's manifest
-cat runs/<run_name>/manifest.yaml
-
-# Check input structure
-ls inputs/schmid/
-ls inputs/schmid/scenarios/
-ls inputs/schmid/timeseries/
 ```
 
 ---
@@ -182,34 +163,19 @@ ls inputs/schmid/timeseries/
 ## Directory Structure
 
 ```
-STRIDE/
-├── configs/
-│   ├── base/                  # Base case configs
-│   │   └── schmid_6stage.yaml
-│   ├── sensitivity/           # Sensitivity analysis configs
-│   │   ├── wacc_low.yaml
-│   │   └── ...
-│   └── default.yaml           # Default values
-├── inputs/
-│   └── schmid/
-│       ├── settings.csv       # REVOL-E-TION settings
-│       ├── scenarios/         # Scenario templates
-│       │   ├── test_50d.csv
-│       │   └── prod_180d.csv
-│       └── timeseries/        # Time-varying data
-│           ├── bev_log_*.csv
-│           ├── dem_timeseries_*.csv
-│           └── grid_opex_*.csv
-├── runs/                      # All run outputs (self-contained)
-│   └── <run_name>/
-└── outputs/                   # Legacy outputs (deprecated)
-```
-
----
-
-## Thesis Compilation
-
-```bash
-cd "/Users/arnoclaude/Documents/TUM/Thesis/LaTeX Master's Thesis"
-latexmk -pdf main.tex
+configs/
+├── base.yaml              # Complete shared defaults (source of truth)
+├── depots/
+│   ├── schmid.yaml        # fleet=84, CO2 baseline, paths
+│   └── metzger.yaml       # fleet=18, CO2 baseline, paths
+├── scenarios/
+│   ├── pessimistic.yaml   # No CO2 constraint, constant grid
+│   └── optimistic.yaml    # 1.5C pathway, CAP grid
+└── sensitivity/
+    ├── wacc_low.yaml      # 2.5%
+    ├── wacc_high.yaml     # 5.3%
+    ├── pv_capex_*.yaml    # 0.90/1.60 €/Wp
+    ├── ess_capex_*.yaml   # 0.45/0.80 €/Wh
+    ├── co2_factor_*.yaml  # 0.25/0.45 kg/kWh
+    └── charger_capex_*.yaml # 25kW/350kW
 ```

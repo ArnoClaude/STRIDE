@@ -144,7 +144,7 @@ class ManifestGenerator:
         self,
         run_name: str,
         run_type: str,
-        config_path: Path,
+        config_path: "Path | List[Path]",
         scenario_path: Path,
         settings_path: Path,
         output_dir: Path,
@@ -152,7 +152,11 @@ class ManifestGenerator:
     ):
         self.run_name = run_name
         self.run_type = run_type
-        self.config_path = Path(config_path).resolve()
+        # Handle single path or list of paths
+        if isinstance(config_path, list):
+            self.config_paths = [Path(p).resolve() for p in config_path]
+        else:
+            self.config_paths = [Path(config_path).resolve()]
         self.scenario_path = Path(scenario_path).resolve()
         self.settings_path = Path(settings_path).resolve()
         self.output_dir = Path(output_dir).resolve()
@@ -202,10 +206,10 @@ class ManifestGenerator:
             },
             
             "inputs": {
-                "config": {
-                    "path": str(self.config_path),
-                    "sha256": compute_file_hash(self.config_path),
-                },
+                "configs": [
+                    {"path": str(p), "sha256": compute_file_hash(p)}
+                    for p in self.config_paths
+                ],
                 "scenario": {
                     "path": str(self.scenario_path),
                     "sha256": compute_file_hash(self.scenario_path),

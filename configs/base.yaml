@@ -1,0 +1,65 @@
+# STRIDE Base Configuration
+# All shared defaults - depot/scenario files override specific values
+
+stages:
+  years: [2025, 2030, 2035, 2040, 2045, 2050]
+  duration_years: 5
+
+technology_costs:
+  pv:
+    base_year: 2025
+    base_cost_per_w: 1.00        # data/pv_capex: Fraunhofer 2024, €/Wp
+    annual_decline_rate: 0.03    # ~15% learning rate
+  ess:
+    base_year: 2025
+    base_cost_per_wh: 0.50       # data/ess_capex: Fraunhofer 2024, €/Wh
+    annual_decline_rate: 0.05    # Fraunhofer Tabelle 8
+
+demand:
+  base_year: 2025
+  base_num_vehicles: 84          # Override in depot config
+  annual_growth_rate: 0.02
+  scale_bev_log: true
+
+grid_co2_trajectory:              # data/grid_co2: Seckinger BAU scenario
+  2025: 0.350
+  2030: 0.300
+  2035: 0.260
+  2040: 0.220
+  2045: 0.200
+  2050: 0.182
+
+emissions:
+  pathway_type: sbti_aca          # data/co2_pathway: SBTi ACA method
+  base_year: 2025
+  base_limit_kg: 200000           # Override in depot config
+  annual_reduction_rate: 0.025    # WB2C: 2.5%/yr LARR
+
+economics:
+  wacc: 0.035                     # data/financial_params: Fraunhofer real WACC
+  invest_budget_per_kwh: 5.0
+
+blocks:
+  investable:
+    - name: pv
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: ess
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: grid
+      cost_param: capex_spec
+      size_param: size_invest_g2s
+  demand:
+    - name: bev
+      size_param: num
+    - name: dem
+      consumption_param: consumption_yrl
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv   # Override in depot config
+  results_base_dir: runs
+
+output:
+  stage_scenarios_dir: runs/default/stages
+  summary_output_dir: runs/default

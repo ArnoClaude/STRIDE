@@ -80,6 +80,37 @@ class MultiStageConfig:
     grid_co2_trajectory: Optional[Dict[int, float]] = None  # Year -> kg CO2/kWh (e.g., {2025: 0.35, 2050: 0.029})
 
     @classmethod
+    def from_yaml_chain(cls, config_paths: List[str]) -> 'MultiStageConfig':
+        """
+        Load configuration from multiple YAML files, merging in order.
+        
+        Parameters
+        ----------
+        config_paths : List[str]
+            Paths to config files. First is base, subsequent override.
+            
+        Returns
+        -------
+        MultiStageConfig
+            Merged and validated configuration
+        """
+        if not config_paths:
+            raise ValueError("At least one config file required")
+        
+        # Load first config as base
+        with open(config_paths[0], 'r') as f:
+            config_dict = yaml.safe_load(f)
+        
+        # Merge subsequent configs
+        for path in config_paths[1:]:
+            with open(path, 'r') as f:
+                override = yaml.safe_load(f)
+            if override:
+                config_dict = deep_merge(config_dict, override)
+        
+        return cls._from_dict(config_dict)
+
+    @classmethod
     def from_yaml(cls, config_path: Optional[str] = None,
                   default_config_path: Optional[str] = None) -> 'MultiStageConfig':
         """

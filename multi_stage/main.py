@@ -5,14 +5,13 @@ STRIDE - Sequential Temporal Resource Investment for Depot Electrification
 Multi-stage optimization CLI entry point.
 
 Usage:
-    python -m multi_stage.main --config CONFIG --scenario SCENARIO [--name NAME] [--type TYPE]
+    python -m multi_stage.main -c CONFIG [CONFIG ...] -s SCENARIO [--name NAME]
 
 Example:
     python -m multi_stage.main \
-        --config configs/base/schmid_6stage.yaml \
-        --scenario inputs/schmid/scenarios/test_50d.csv \
-        --name base_schmid_test \
-        --type base
+        -c configs/base.yaml configs/depots/schmid.yaml \
+        -s inputs/schmid/scenarios/base.csv \
+        --name schmid_base
 """
 
 import argparse
@@ -28,30 +27,31 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run with auto-generated name
+  # Schmid base run
   python -m multi_stage.main \\
-      --config configs/base/schmid_6stage.yaml \\
-      --scenario inputs/schmid/scenarios/test_50d.csv
+      -c configs/base.yaml configs/depots/schmid.yaml \\
+      -s inputs/schmid/scenarios/base.csv \\
+      --name schmid_base
 
-  # Run with explicit name and type
+  # Schmid with optimistic scenario
   python -m multi_stage.main \\
-      --config configs/base/schmid_6stage.yaml \\
-      --scenario inputs/schmid/scenarios/test_50d.csv \\
-      --name base_schmid_test_50d \\
-      --type base
+      -c configs/base.yaml configs/depots/schmid.yaml configs/scenarios/optimistic.yaml \\
+      -s inputs/schmid/scenarios/base.csv \\
+      --name schmid_optimistic
 
-  # Sensitivity run
+  # Schmid with WACC sensitivity
   python -m multi_stage.main \\
-      --config configs/sensitivity/wacc_high.yaml \\
-      --scenario inputs/schmid/scenarios/prod_180d.csv \\
-      --type sensitivity
+      -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/wacc_high.yaml \\
+      -s inputs/schmid/scenarios/base.csv \\
+      --name schmid_wacc_high
         """
     )
     
     parser.add_argument(
         "--config", "-c",
         required=True,
-        help="Path to multi-stage YAML config file"
+        nargs="+",
+        help="Path(s) to YAML config file(s). Multiple files are merged in order (base first, overrides last)"
     )
     
     parser.add_argument(
@@ -88,12 +88,13 @@ Examples:
     args = parser.parse_args()
     
     # Validate paths
-    config_path = Path(args.config).resolve()
+    config_paths = [Path(c).resolve() for c in args.config]
     scenario_path = Path(args.scenario).resolve()
     
-    if not config_path.exists():
-        print(f"❌ Config file not found: {config_path}")
-        sys.exit(1)
+    for config_path in config_paths:
+        if not config_path.exists():
+            print(f"❌ Config file not found: {config_path}")
+            sys.exit(1)
     
     if not scenario_path.exists():
         print(f"❌ Scenario file not found: {scenario_path}")
@@ -104,15 +105,15 @@ Examples:
     from .sequential_optimizer import SequentialStageOptimizer
     from .manifest import ManifestGenerator, generate_run_name
     
-    # Load config
-    print(f"Loading config: {config_path}")
-    config = MultiStageConfig.from_yaml(str(config_path))
+    # Load config (chain multiple files)
+    print(f"Loading configs: {[p.name for p in config_paths]}")
+    config = MultiStageConfig.from_yaml_chain([str(p) for p in config_paths])
     
     # Determine run name
     if args.name:
         run_name = args.name
     else:
-        run_name = generate_run_name(config_path, scenario_path, args.type)
+        run_name = generate_run_name(config_paths[-1], scenario_path, args.type)
     
     # Determine output directory
     repo_root = Path(__file__).parent.parent
@@ -135,7 +136,8 @@ Examples:
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Reconstruct command for manifest
-    command = f"python -m multi_stage.main -c {args.config} -s {args.scenario}"
+    config_args = " ".join([f"-c {c}" for c in args.config])
+    command = f"python -m multi_stage.main {config_args} -s {args.scenario}"
     if args.name:
         command += f" --name {args.name}"
     if args.type != "base":
@@ -143,7 +145,8 @@ Examples:
     
     # Copy input files to run directory for traceability
     print(f"\nCopying input files to run directory...")
-    shutil.copy(config_path, output_dir / "config.yaml")
+    for i, cp in enumerate(config_paths):
+        shutil.copy(cp, output_dir / f"config_{i}_{cp.name}")
     shutil.copy(scenario_path, output_dir / "scenario_template.csv")
     shutil.copy(config.revoletion_settings_path, output_dir / "settings_original.csv")
     
@@ -167,7 +170,7 @@ Examples:
     manifest_gen = ManifestGenerator(
         run_name=run_name,
         run_type=args.type,
-        config_path=config_path,
+        config_path=config_paths,
         scenario_path=scenario_path,
         settings_path=config.revoletion_settings_path,
         output_dir=output_dir,
@@ -183,7 +186,7 @@ Examples:
     print(f"{'='*60}")
     print(f"Run Name: {run_name}")
     print(f"Run Type: {args.type}")
-    print(f"Config:   {config_path.name}")
+    print(f"Configs:  {[p.name for p in config_paths]}")
     print(f"Scenario: {scenario_path.name}")
     print(f"Output:   {output_dir}")
     print(f"Stages:   {config.stages}")

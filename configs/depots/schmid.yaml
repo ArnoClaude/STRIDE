@@ -1,0 +1,11 @@
+# Schmid Depot - 84 vehicles
+# Overrides base.yaml with depot-specific values
+
+demand:
+  base_num_vehicles: 84
+
+emissions:
+  base_limit_kg: 200000           # 84 vehicles × 50 days × ~100 kWh/day × 0.35 kg/kWh
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv

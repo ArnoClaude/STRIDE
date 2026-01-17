@@ -96,32 +96,40 @@ If using **PyCharm/Jupyter**, configure the project interpreter to use `venv/bin
 
 ### Running Multi-Stage Optimization
 
+Configs are chained: `base.yaml` → `depot` → `scenario/sensitivity`
+
 ```bash
 # Activate virtual environment
 source venv/bin/activate
 
-# Run 6-stage optimization (auto-generated run name)
+# Schmid base run
 python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/test_50d.csv
+    -c configs/base.yaml configs/depots/schmid.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_base
 
-# Run with explicit name and type
+# With scenario (optimistic)
 python3 -m multi_stage.main \
-    -c configs/base/schmid_6stage.yaml \
-    -s inputs/schmid/scenarios/test_50d.csv \
-    --name my_test_run \
-    --type base
+    -c configs/base.yaml configs/depots/schmid.yaml configs/scenarios/optimistic.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_optimistic
 
-# Sensitivity analysis
+# With sensitivity (WACC high)
 python3 -m multi_stage.main \
-    -c configs/sensitivity/wacc_low.yaml \
-    -s inputs/schmid/scenarios/prod_180d.csv \
-    --type sensitivity
+    -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/wacc_high.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_wacc_high
+
+# Metzger depot
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/metzger.yaml \
+    -s inputs/metzger/scenarios/base.csv \
+    --name metzger_base
 ```
 
 Each run creates a self-contained directory in `runs/<name>/` with:
 - `manifest.yaml` - Full traceability (inputs, git commit, parameters)
-- `config.yaml` - Copy of config used
+- `config_*.yaml` - Copies of all configs used
 - `scenario_template.csv` - Copy of input scenario
 - `revoletion/` - REVOL-E-TION outputs (contained)
 - `multi_stage_results.json` - Aggregated results
@@ -174,13 +182,18 @@ This diagram shows:
 
 ```
 STRIDE/
-├── configs/                    # YAML configuration files for multi-stage runs
-│   ├── base/                  # Base case configurations
-│   │   └── schmid_6stage.yaml # Main 6-stage config (2025-2050)
-│   ├── sensitivity/           # Sensitivity analysis configs
-│   │   ├── wacc_low.yaml
-│   │   └── ...
-│   └── default.yaml           # Default parameter values
+├── configs/                    # YAML configuration files
+│   ├── base.yaml              # Complete shared defaults (source of truth)
+│   ├── depots/                # Depot-specific overrides
+│   │   ├── schmid.yaml        # fleet=84, CO2 baseline
+│   │   └── metzger.yaml       # fleet=18, CO2 baseline
+│   ├── scenarios/             # Scenario overrides
+│   │   ├── pessimistic.yaml   # No CO2 constraint
+│   │   └── optimistic.yaml    # 1.5C pathway
+│   └── sensitivity/           # Single-parameter overrides
+│       ├── wacc_*.yaml
+│       ├── pv_capex_*.yaml
+│       └── ...
 ├── data/                       # Research data and source documents
 │   ├── grid_co2/              # CO2 emission factors + sources
 │   ├── pv_capex/              # PV cost projections + sources
@@ -189,40 +202,22 @@ STRIDE/
 │   ├── depot_Schmid/          # Case study data (Schmid depot)
 │   └── .../                   # Other data categories
 ├── inputs/                     # Scenario input files for REVOL-E-TION
-│   └── schmid/                # Schmid depot scenario
-│       ├── settings.csv       # REVOL-E-TION settings
-│       ├── scenarios/         # Scenario templates
-│       │   ├── test_50d.csv   # 50-day test scenario
-│       │   └── prod_180d.csv  # 180-day production scenario
-│       └── timeseries/        # Time-varying data
-│           ├── bev_log_*.csv  # Vehicle charging logs
-│           ├── dem_*.csv      # Fixed demand profiles
-│           └── grid_opex_*.csv # Electricity prices
+│   ├── schmid/                # Schmid depot
+│   │   ├── settings.csv
+│   │   ├── scenarios/base.csv
+│   │   └── timeseries/
+│   └── metzger/               # Metzger depot
 ├── runs/                       # All run outputs (self-contained)
-│   └── <run_name>/            # Each run is fully traceable
-│       ├── manifest.yaml      # Traceability: inputs, git, params
-│       ├── config.yaml        # Copy of config used
-│       ├── scenario_template.csv
-│       ├── settings.csv       # Run-specific settings
-│       ├── stages/            # Generated per-stage scenarios
-│       ├── revoletion/        # REVOL-E-TION outputs (contained)
-│       └── plots/
-├── multi_stage/               # STRIDE multi-stage wrapper code
-│   ├── main.py               # CLI entry point
+│   └── <run_name>/
+│       ├── manifest.yaml      # Traceability
+│       ├── config_*.yaml      # Config copies
+│       └── ...
+├── multi_stage/               # STRIDE wrapper code
+│   ├── main.py
+│   ├── config_loader.py
 │   ├── sequential_optimizer.py
-│   ├── scenario_builder.py
-│   ├── results_parser.py
-│   ├── manifest.py           # Run traceability
-│   ├── visualize.py          # Thesis-quality plotting
-│   └── config_loader.py
-├── revoletion/                # REVOL-E-TION submodule (modified)
-│   ├── revoletion/           # Core optimization code
-│   │   ├── blocks.py         # Energy system components
-│   │   ├── constraints.py    # CO2 constraint (added)
-│   │   └── simulation.py     # Main simulation loop
-│   └── example/              # Reference examples
-├── outputs/                   # Legacy outputs (deprecated, use runs/)
-└── notebooks/                 # Development/testing notebooks
+│   └── ...
+└── revoletion/                # REVOL-E-TION submodule
 ```
 
 ---

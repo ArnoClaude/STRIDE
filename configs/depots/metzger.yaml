@@ -1,0 +1,11 @@
+# Metzger Depot - 18 vehicles
+# Overrides base.yaml with depot-specific values
+
+demand:
+  base_num_vehicles: 18
+
+emissions:
+  base_limit_kg: 45000            # 18 vehicles × 50 days × ~100 kWh/day × 0.35 kg/kWh
+
+revoletion:
+  settings_path: inputs/metzger/settings.csv
