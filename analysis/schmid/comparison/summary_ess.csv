@@ -1,0 +1,4 @@
+Run,NPV Total (M€),CAPEX Total (M€),PV 2050 (kWp),ESS 2050 (kWh),Grid 2050 (kW),CO₂ Total (t)
+base,-52.90,4.91,0,0,0,564.64
+ess_low,-52.86,4.89,0,0,0,564.15
+ess_high,-53.03,4.90,0,0,0,564.64

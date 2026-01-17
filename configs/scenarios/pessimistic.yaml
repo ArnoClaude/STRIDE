@@ -1,0 +1,93 @@
+# Scenario: Pessimistic ("Delayed Transition")
+# STRIDE - Sequential Temporal Resource Investment for Depot Electrification
+#
+# Storyline: Grid decarbonization fails, no depot CO2 constraints
+# Grid CO2 factor: Constant at 0.35 kg/kWh (no progress)
+# CO2 pathway: No constraint
+# Technology costs: Slow decline (limited policy support)
+# WACC: Higher (increased risk due to policy uncertainty)
+#
+# Sources:
+#   - Grid CO2: Constant at UBA 2024 baseline (data/grid_co2/NOTES.md)
+#   - CO2 pathway: No SBTi constraints (pessimistic assumption)
+#
+# Use case: Stress test depot economics without climate policy support
+
+scenario:
+  name: pessimistic
+  description: "Delayed Transition - no grid decarbonization, no CO2 constraints"
+
+# Grid CO2 factor trajectory (kg CO2/kWh)
+# Constant at 2024 level - no decarbonization
+grid_co2_trajectory:
+  2025: 0.350
+  2030: 0.350
+  2035: 0.350
+  2040: 0.350
+  2045: 0.350
+  2050: 0.350
+
+# Override grid CO2 factor in scenario building
+scenario_overrides:
+  - block: grid
+    key: co2_spec_g2s
+    value: 0.35  # Constant, no decline
+
+stages:
+  years: [2025, 2030, 2035, 2040, 2045, 2050]
+  duration_years: 5
+
+technology_costs:
+  pv:
+    base_year: 2025
+    base_cost_per_w: 1.00
+    annual_decline_rate: 0.02    # Slow: 2%/yr (limited policy support)
+  ess:
+    base_year: 2025
+    base_cost_per_wh: 0.50
+    annual_decline_rate: 0.03    # Slow: 3%/yr
+
+demand:
+  base_year: 2025
+  base_num_vehicles: 84
+  annual_growth_rate: 0.01       # Slow fleet growth (1%/yr)
+  scale_bev_log: true
+
+# NO CO2 constraint in pessimistic scenario
+emissions:
+  pathway_type: none             # No constraint
+  # Alternatively, set very high limits that never bind:
+  # pathway_type: linear
+  # base_year: 2025
+  # base_limit_kg: 999999999
+  # final_year: 2050
+  # final_limit_kg: 999999999
+
+economics:
+  wacc: 0.05                     # Higher risk: 5%
+  invest_budget_per_kwh: 5.0
+
+blocks:
+  investable:
+    - name: pv
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: ess
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: grid
+      cost_param: capex_spec
+      size_param: size_invest_g2s
+  demand:
+    - name: bev
+      size_param: num
+    - name: dem
+      consumption_param: consumption_yrl
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv
+  results_base_dir: runs
+
+output:
+  stage_scenarios_dir: runs/pessimistic_scenario/stages
+  summary_output_dir: runs/pessimistic_scenario

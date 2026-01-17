@@ -1,0 +1,81 @@
+# Sensitivity: Low Charger CAPEX (5,000 €/vehicle, 25 kW DC)
+# Base: schmid_6stage.yaml
+#
+# Rationale: Affordable depot charging with AC or low-power DC
+# Source: ACEA/McKinsey European EV Charging Masterplan 2022
+# Technology: 25 kW DC charger (cost: €14,000 total → €4,667/vehicle at 1:3 ratio, rounded to €5,000)
+#
+# Parameters changed:
+#   bev.capex_charger: 20000 → 5000
+#   bev.pwr_ext_dc: 150000 → 25000
+
+sensitivity:
+  parameter: bev.charger_tech
+  base_value: "150 kW DC"
+  test_value: "25 kW DC"
+  description: "Low charger CAPEX - 25 kW DC, €5k/vehicle"
+
+# Scenario parameter overrides (applied during scenario building)
+scenario_overrides:
+  - block: bev
+    key: capex_charger
+    value: 5000
+  - block: bev
+    key: pwr_ext_dc
+    value: 25000
+
+stages:
+  years: [2025, 2030, 2035, 2040, 2045, 2050]
+  duration_years: 5
+
+technology_costs:
+  pv:
+    base_year: 2025
+    base_cost_per_w: 1.00
+    annual_decline_rate: 0.03
+  ess:
+    base_year: 2025
+    base_cost_per_wh: 0.50
+    annual_decline_rate: 0.05
+
+demand:
+  base_year: 2025
+  base_num_vehicles: 84
+  annual_growth_rate: 0.02
+  scale_bev_log: true
+
+emissions:
+  pathway_type: linear
+  base_year: 2025
+  base_limit_kg: 200000
+  final_year: 2050
+  final_limit_kg: 20000
+
+economics:
+  wacc: 0.035
+  invest_budget_per_kwh: 5.0
+
+blocks:
+  investable:
+    - name: pv
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: ess
+      cost_param: capex_spec
+      size_param: size_invest
+    - name: grid
+      cost_param: capex_spec
+      size_param: size_invest_g2s
+  demand:
+    - name: bev
+      size_param: num
+    - name: dem
+      consumption_param: consumption_yrl
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv
+  results_base_dir: runs
+
+output:
+  stage_scenarios_dir: runs/schmid/charger_capex_low/stages
+  summary_output_dir: runs/schmid/charger_capex_low

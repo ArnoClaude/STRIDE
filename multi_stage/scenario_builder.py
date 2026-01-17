@@ -131,6 +131,9 @@ class ScenarioBuilder:
         # 4. Update CO2 limits (decarbonization pathway)
         scenario_df = self._update_co2_limits(scenario_df, stage_year, scenario_column)
 
+        # 4b. Update grid CO2 factor (grid decarbonization trajectory)
+        scenario_df = self._update_grid_co2_factor(scenario_df, stage_year, scenario_column)
+
         # 5. Set invest_max to prevent unbounded optimization
         # This is critical for multi-stage: revoletion doesn't know about future stages,
         # so we need reasonable bounds to prevent unrealistic investment in any single stage
@@ -456,6 +459,98 @@ class ScenarioBuilder:
             else:
                 print(f"  - CO2 limit: None → {co2_limit_new:.0f} kg "
                      f"(decarbonization pathway enabled)")
+
+        return df
+
+    def _update_grid_co2_factor(
+        self,
+        df: pd.DataFrame,
+        stage_year: int,
+        column: str
+    ) -> pd.DataFrame:
+        """
+        Update grid CO2 emission factor (co2_spec_g2s) based on decarbonization trajectory.
+
+        Uses config.grid_co2_trajectory if provided, otherwise falls back to default
+        BAU trajectory from Seckinger & Radgen (2021).
+
+        Default (BAU scenario, -74% by 2050):
+        - 2025: 0.350 kg CO2/kWh (baseline)
+        - 2030: 0.300 kg CO2/kWh
+        - 2040: 0.220 kg CO2/kWh
+        - 2050: 0.182 kg CO2/kWh
+
+        Source: Seckinger & Radgen (2021). Energies 14(9):2527. DOI: 10.3390/en14092527
+
+        Linear interpolation between milestone years for 5-year stage intervals.
+
+        Parameters:
+        -----------
+        df : DataFrame
+            Scenario DataFrame
+        stage_year : int
+            Year of this stage
+        column : str
+            Column to update
+
+        Returns:
+        --------
+        DataFrame : Updated scenario
+        """
+        # Use config trajectory if provided, otherwise default to BAU
+        # Default: Seckinger & Radgen (2021) BAU scenario (-74% by 2050)
+        default_trajectory = {
+            2025: 0.350,
+            2030: 0.300,
+            2035: 0.260,
+            2040: 0.220,
+            2045: 0.200,
+            2050: 0.182
+        }
+
+        grid_co2_trajectory = self.config.grid_co2_trajectory or default_trajectory
+        trajectory_source = "config" if self.config.grid_co2_trajectory else "Seckinger BAU"
+
+        # Linear interpolation between milestone years
+        milestone_years = sorted(grid_co2_trajectory.keys())
+
+        if stage_year in grid_co2_trajectory:
+            co2_factor_new = grid_co2_trajectory[stage_year]
+        else:
+            # Find bracketing years for interpolation
+            prev_year = None
+            next_year = None
+            for i, year in enumerate(milestone_years):
+                if year < stage_year:
+                    prev_year = year
+                elif year > stage_year:
+                    next_year = year
+                    break
+
+            if prev_year is None or next_year is None:
+                # Outside range, use closest
+                co2_factor_new = grid_co2_trajectory[milestone_years[0]] if stage_year < milestone_years[0] \
+                                 else grid_co2_trajectory[milestone_years[-1]]
+            else:
+                # Linear interpolation
+                prev_factor = grid_co2_trajectory[prev_year]
+                next_factor = grid_co2_trajectory[next_year]
+                frac = (stage_year - prev_year) / (next_year - prev_year)
+                co2_factor_new = prev_factor + frac * (next_factor - prev_factor)
+
+        # Update grid.co2_spec_g2s in scenario
+        co2_factor_mask = (df['block'] == 'grid') & (df['key'] == 'co2_spec_g2s')
+        if co2_factor_mask.any():
+            co2_factor_old = df.loc[co2_factor_mask, column].values[0]
+            df.loc[co2_factor_mask, column] = co2_factor_new
+
+            if pd.notna(co2_factor_old) and co2_factor_old != '' and co2_factor_old != 'None':
+                co2_factor_old = float(co2_factor_old)
+                print(f"  - Grid CO2 factor: {co2_factor_old:.3f} → {co2_factor_new:.3f} kg/kWh "
+                     f"({trajectory_source})")
+            else:
+                print(f"  - Grid CO2 factor: None → {co2_factor_new:.3f} kg/kWh "
+                     f"({trajectory_source})")
 
         return df
 

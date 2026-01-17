@@ -131,7 +131,7 @@ bev,crev_spec_dist,0
 bev,pwr_chg,150000
 bev,pwr_dis,0
 bev,pwr_ext_ac,43000
-bev,pwr_ext_dc,400000
+bev,pwr_ext_dc,150000
 bev,factor_pwr_des,0.95
 bev,eff_storage_roundtrip,0.92
 bev,eff_chg_ac,0.926

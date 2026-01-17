@@ -27,6 +27,17 @@ demand:
   annual_growth_rate: 0.02          # 2%/yr realistic fleet expansion
   scale_bev_log: true               # Enable bev_log scaling for fleet growth
 
+# Grid CO2 factor trajectory (kg CO2/kWh)
+# Default: Seckinger & Radgen (2021) BAU scenario (-74% by 2050)
+# Source: Energies 14(9):2527. DOI: 10.3390/en14092527
+grid_co2_trajectory:
+  2025: 0.350
+  2030: 0.300
+  2035: 0.260
+  2040: 0.220
+  2045: 0.200
+  2050: 0.182
+
 # CO2 emissions pathway
 # Linear reduction from 2025 baseline to near-zero by 2050
 # Based on 50-day simulation period

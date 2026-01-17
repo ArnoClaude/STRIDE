@@ -51,7 +51,7 @@ class MultiStageConfig:
     demand_annual_growth_rate: float
 
     # Emissions configuration
-    emissions_pathway_type: str
+    emissions_pathway_type: str  # 'linear', 'sbti_aca', or 'none'
     emissions_base_year: int
     emissions_base_limit_kg: float
     emissions_final_year: int
@@ -76,6 +76,8 @@ class MultiStageConfig:
     demand_scale_bev_log: bool = True  # Whether to scale bev_log files for fleet growth
     invest_budget_per_kwh: float = 3.0  # $ allowed per kWh of annual fleet energy demand
     scenario_overrides: Optional[List[Dict[str, Any]]] = None  # Config-based scenario parameter overrides
+    emissions_annual_reduction_rate: Optional[float] = None  # LARR for sbti_aca (e.g., 0.042 for 1.5°C)
+    grid_co2_trajectory: Optional[Dict[int, float]] = None  # Year -> kg CO2/kWh (e.g., {2025: 0.35, 2050: 0.029})
 
     @classmethod
     def from_yaml(cls, config_path: Optional[str] = None,
@@ -182,10 +184,11 @@ class MultiStageConfig:
             demand_annual_growth_rate=cfg['demand']['annual_growth_rate'],
             demand_scale_bev_log=scale_bev_log,
             emissions_pathway_type=cfg['emissions']['pathway_type'],
-            emissions_base_year=cfg['emissions']['base_year'],
-            emissions_base_limit_kg=cfg['emissions']['base_limit_kg'],
-            emissions_final_year=cfg['emissions']['final_year'],
-            emissions_final_limit_kg=cfg['emissions']['final_limit_kg'],
+            emissions_base_year=cfg['emissions'].get('base_year', 2025),
+            emissions_base_limit_kg=cfg['emissions'].get('base_limit_kg', 999999999),
+            emissions_final_year=cfg['emissions'].get('final_year', 2050),
+            emissions_final_limit_kg=cfg['emissions'].get('final_limit_kg', 999999999),
+            emissions_annual_reduction_rate=cfg['emissions'].get('annual_reduction_rate', None),
             wacc=cfg['economics']['wacc'],
             invest_budget_per_kwh=invest_budget_per_kwh,
             investable_blocks=investable_blocks,
@@ -194,7 +197,8 @@ class MultiStageConfig:
             revoletion_results_base_dir=resolve_path(cfg['revoletion']['results_base_dir']),
             stage_scenarios_dir=resolve_path(cfg['output']['stage_scenarios_dir']),
             summary_output_dir=resolve_path(cfg['output']['summary_output_dir']),
-            scenario_overrides=cfg.get('scenario_overrides', None)
+            scenario_overrides=cfg.get('scenario_overrides', None),
+            grid_co2_trajectory=cfg.get('grid_co2_trajectory', None)
         )
 
         # Validate
@@ -209,10 +213,16 @@ class MultiStageConfig:
         if not all(self.stages[i] < self.stages[i+1] for i in range(len(self.stages)-1)):
             raise ValueError("Stages must be in ascending order")
 
-        # Check final year >= max(stages) (can be equal to last stage)
-        if self.emissions_final_year < max(self.stages):
-            raise ValueError(f"Emissions final year ({self.emissions_final_year}) "
-                           f"must be >= last stage ({max(self.stages)})")
+        # Check final year >= max(stages) (only for 'linear' pathway)
+        if self.emissions_pathway_type == 'linear':
+            if self.emissions_final_year < max(self.stages):
+                raise ValueError(f"Emissions final year ({self.emissions_final_year}) "
+                               f"must be >= last stage ({max(self.stages)})")
+
+        # Check annual_reduction_rate is set for sbti_aca
+        if self.emissions_pathway_type == 'sbti_aca':
+            if self.emissions_annual_reduction_rate is None:
+                raise ValueError("sbti_aca pathway requires 'annual_reduction_rate' in emissions config")
 
         # Check decline rates in valid range
         for tech_name, tech_config in self.tech_costs.items():
@@ -239,6 +249,11 @@ class MultiStageConfig:
         """
         Calculate CO2 limit for a given year based on pathway.
 
+        Supported pathway types:
+        - 'none': No constraint (returns very high value)
+        - 'linear': Linear interpolation between base_limit and final_limit
+        - 'sbti_aca': SBTi Absolute Contraction Approach using LARR
+
         Parameters
         ----------
         year : int
@@ -249,22 +264,44 @@ class MultiStageConfig:
         float
             CO2 limit in kg
         """
-        if self.emissions_pathway_type == 'linear':
-            # Linear interpolation
+        if self.emissions_pathway_type == 'none':
+            # No constraint
+            return 999999999.0
+
+        elif self.emissions_pathway_type == 'linear':
+            # Linear interpolation between base and final limits
             if year <= self.emissions_base_year:
                 return self.emissions_base_limit_kg
             elif year >= self.emissions_final_year:
                 return self.emissions_final_limit_kg
             else:
-                # Interpolate
                 fraction = ((year - self.emissions_base_year) /
                            (self.emissions_final_year - self.emissions_base_year))
                 return (self.emissions_base_limit_kg +
                        fraction * (self.emissions_final_limit_kg -
                                   self.emissions_base_limit_kg))
+
+        elif self.emissions_pathway_type == 'sbti_aca':
+            # SBTi Absolute Contraction Approach
+            # Formula from SBTi Methods Doc (Eq 4.1, p.25):
+            #   E(t) = E(base) × [1 - LARR × (t - base_year)]
+            # Where LARR = Linear Annual Reduction Rate (e.g., 0.042 for 1.5°C)
+            if self.emissions_annual_reduction_rate is None:
+                raise ValueError("sbti_aca pathway requires 'annual_reduction_rate' in config")
+
+            if year <= self.emissions_base_year:
+                return self.emissions_base_limit_kg
+
+            years_elapsed = year - self.emissions_base_year
+            reduction_factor = self.emissions_annual_reduction_rate * years_elapsed
+            limit = self.emissions_base_limit_kg * (1 - reduction_factor)
+
+            # Ensure non-negative (net-zero floor)
+            return max(0.0, limit)
+
         else:
             raise NotImplementedError(f"Pathway type '{self.emissions_pathway_type}' "
-                                    "not yet implemented")
+                                    "not implemented. Use 'none', 'linear', or 'sbti_aca'.")
 
     def calculate_fleet_size(self, year: int) -> int:
         """Calculate fleet size for a given year using exponential growth."""

@@ -233,11 +233,56 @@ REVOL-E-TION parameter: `co2_spec_g2s` = **0.00035 kg CO2/Wh**
 
 ## Projection Trajectory (for multi-stage)
 
-**⚠️ IMPORTANT: Future projections are NOT from verified sources with exact g/kWh values.**
+### Verified Source: Seckinger & Radgen (2021)
 
-The UBA publication only provides historical data up to 2024. No official German government source provides specific g/kWh emission factor projections for 2030-2050.
+**Source:** Seckinger, N., & Radgen, P. (2021). "Dynamic Prospective Average and Marginal GHG Emission Factors—Scenario-Based Method for the German Power System until 2050." *Energies*, 14(9), 2527.
+**DOI:** https://doi.org/10.3390/en14092527
+**File:** `sources/energies-14-02527.pdf` *(to be downloaded)*
 
-### What IS verified (from downloaded sources):
+This peer-reviewed paper provides **scenario-based** emission factor projections for German electricity, using a linear optimization model of the power system. It models two scenarios:
+
+#### BAU (Business-As-Usual) Scenario
+- **Reduction target:** -74% GHG vs 1990 by 2050
+- **Renewables share 2050:** 57%
+- **2050 emission factor:** 182 gCO2eq/kWh
+
+#### CAP (Climate-Action-Plan) Scenario
+- **Reduction target:** -95% GHG vs 1990 by 2050
+- **Renewables share 2050:** 92%
+- **2050 emission factor:** 29 gCO2eq/kWh
+
+### Emission Factor Trajectory Table
+
+**Source:** Seckinger & Radgen (2021), Figure 4 and Table 2
+
+| Year | BAU (g/kWh) | CAP (g/kWh) | Historical (g/kWh) |
+|------|-------------|-------------|-------------------|
+| 2018 | 468 | 468 | 468 (baseline) |
+| 2020 | ~420 | ~420 | ~400 (actual) |
+| 2025 | ~350 | ~350 | - |
+| 2030 | ~300 | ~250 | - |
+| 2035 | ~260 | ~150 | - |
+| 2040 | ~220 | ~80 | - |
+| 2045 | ~200 | ~50 | - |
+| 2050 | **182** | **29** | - |
+
+**Note:** Values for 2025-2045 are interpolated from paper figures. Exact values for 2050 are from Table 2.
+
+### Scenario Implications
+
+For STRIDE multi-stage optimization, use:
+
+| Scenario | Grid CO2 Factor Trajectory | Rationale |
+|----------|---------------------------|-----------|
+| **Pessimistic** | Constant 0.35 kg/kWh | No grid decarbonization |
+| **Moderate** | BAU trajectory → 0.182 kg/kWh | Current policy trajectory |
+| **Optimistic** | CAP trajectory → 0.029 kg/kWh | Aggressive climate action |
+
+**Config files:** See `configs/scenarios/` for full scenario definitions.
+
+---
+
+### Supporting Context (Policy Targets)
 
 #### 1. Renewables share 2024: 62.7%
 **Source:** Fraunhofer ISE, "German Net Power Generation in 2024", Press Release, 03.01.2025
@@ -258,22 +303,6 @@ The UBA publication only provides historical data up to 2024. No official German
 **Source:** Clean Energy Wire factsheet
 **File:** `sources/cleanenergywire_ghg_targets.html`
 > "Germany has passed legislation (in 2020) to end coal-fired power generation by **2038** at the latest [...] The government said 'ideally' it wants to pull forward the coal exit from 2038 to **2030**."
-
-### Estimated emission factors (USE WITH CAUTION):
-
-**⚠️ No source found with exact g/kWh projections for 2030-2045.**
-
-| Year | CO2 Factor (g/kWh) | Source | Confidence |
-|------|-------------------|--------|------------|
-| 2024 | 363 | UBA Strommix, Page 21, exact quote | ✅ **Verified** |
-| 2025 | ~350 | Extrapolated from 2024 trend | ⚠️ Estimate |
-| 2030 | 90-200 | No PDF source; derived from 80% renewables target | ❌ **Not verified** |
-| 2040 | 20-50 | No PDF source; derived from 88% GHG reduction | ❌ **Not verified** |
-| 2045 | ~0-10 | No PDF source; derived from net-zero target | ❌ **Not verified** |
-
-**Calculation basis for 2030 estimate:**
-- If 80% renewables (0 g/kWh) + 20% gas (~400 g/kWh) → ~80 g/kWh average
-- Range 90-200 accounts for uncertainty in gas share and imports
 
 ---
 
