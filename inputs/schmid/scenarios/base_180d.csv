@@ -8,7 +8,7 @@ scenario,strategy,go
 scenario,len_ph,None
 scenario,len_ch,None
 scenario,truncate_ph,True
-scenario,invest_max,2000000 #todo check if this is fine, it should probably be more.
+scenario,invest_max,7160000
 scenario,co2_max,None
 scenario,wacc,0.035
 scenario,currency,EUR
