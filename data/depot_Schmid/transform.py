@@ -28,17 +28,39 @@ DEFAULT_DAYS = 249  # Data covers ~249 days (Jun 2023 - Feb 2024)
 DEFAULT_TIMESTEP = "15min"
 
 
-def load_tracks(filepath: Path, freight_forwarder: int) -> pd.DataFrame:
-    """Load and filter tracks_with_energy.csv by freight_forwarder."""
+def load_tracks(filepath: Path, freight_forwarder: int, month: str = None, repeat: int = 1) -> pd.DataFrame:
+    """Load and filter tracks_with_energy.csv by freight_forwarder.
+
+    Args:
+        month: Filter to specific month (e.g., "2023-10"). If None, use all data.
+        repeat: Repeat the filtered data N times (for extending simulation period).
+    """
     df = pd.read_csv(filepath)
-    
+
     # Filter by freight forwarder
     df = df[df["freight_forwarder"] == freight_forwarder].copy()
-    
+
     # Parse timestamps
     df["start_time"] = pd.to_datetime(df["start_time"], format="mixed", utc=True).dt.tz_convert("Europe/Berlin")
     df["stop_time"] = pd.to_datetime(df["stop_time"], format="mixed", utc=True).dt.tz_convert("Europe/Berlin")
-    
+
+    # Filter to specific month if requested
+    if month:
+        year, mon = map(int, month.split("-"))
+        df = df[(df["start_time"].dt.year == year) & (df["start_time"].dt.month == mon)].copy()
+
+    # Repeat data N times with date shifts
+    if repeat > 1:
+        base_start = df["start_time"].min().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        chunks = [df.copy()]
+        for i in range(1, repeat):
+            shifted = df.copy()
+            shift = pd.DateOffset(days=30 * i)  # ~30 days per month
+            shifted["start_time"] = shifted["start_time"] + shift
+            shifted["stop_time"] = shifted["stop_time"] + shift
+            chunks.append(shifted)
+        df = pd.concat(chunks, ignore_index=True)
+
     return df
 
 
@@ -158,11 +180,11 @@ def sample_tracks_in_log(tracks: pd.DataFrame, log: pd.DataFrame, vehicle_ids: l
                     log.loc[return_bin, (bev_label, "dsoc")] = 1
     
     # Set atac=True when at base (vehicle can charge at depot AC charger)
-    # atdc remains False (no DC fast charging at depot - only AC)
+    # Set atdc=True when away (vehicle can use public DC fast chargers en-route)
     for i in range(len(vehicle_ids)):
         bev = f"bev{i}"
-        log.loc[:, (bev, "atac")] = log[(bev, "atbase")]  # Can charge when at base
-        log.loc[:, (bev, "atdc")] = False
+        log.loc[:, (bev, "atac")] = log[(bev, "atbase")]   # AC at depot
+        log.loc[:, (bev, "atdc")] = ~log[(bev, "atbase")]  # DC when away
     
     return log
 
@@ -221,18 +243,21 @@ def main():
     parser.add_argument("--start", type=str, default=DEFAULT_START, help="Start date (YYYY-MM-DD)")
     parser.add_argument("--days", type=int, default=DEFAULT_DAYS, help="Simulation duration in days")
     parser.add_argument("--timestep", type=str, default=DEFAULT_TIMESTEP, help="Time resolution")
+    parser.add_argument("--month", type=str, default=None, help="Filter to month (YYYY-MM)")
+    parser.add_argument("--repeat", type=int, default=1, help="Repeat filtered data N times")
+    parser.add_argument("--output-start", type=str, default=None, help="Shift output dates to start at this date")
     args = parser.parse_args()
-    
+
     # Find tracks file
     tracks_file = RAW_DIR / "tracks_with_energy.csv"
     if not tracks_file.exists():
         print(f"Error: {tracks_file} not found")
         return
-    
+
     print(f"Processing depot: {DEPOT_NAME} (freight_forwarder={FREIGHT_FORWARDER_ID})")
-    
+
     # Load and filter tracks
-    tracks = load_tracks(tracks_file, FREIGHT_FORWARDER_ID)
+    tracks = load_tracks(tracks_file, FREIGHT_FORWARDER_ID, month=args.month, repeat=args.repeat)
     vehicle_ids = get_vehicle_ids(tracks)
     print(f"  Vehicles: {len(vehicle_ids)}")
     print(f"  Tracks: {len(tracks)}")
@@ -245,7 +270,14 @@ def main():
     
     # Fill log with track data
     log = sample_tracks_in_log(tracks, log, vehicle_ids, args.timestep)
-    
+
+    # Shift output dates if requested
+    if args.output_start:
+        output_start = pd.Timestamp(args.output_start, tz="Europe/Berlin")
+        shift = output_start - log.index[0]
+        log.index = log.index + shift
+        print(f"  Output shifted to: {log.index.min()} to {log.index.max()}")
+
     # Save output
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     output_path = PROCESSED_DIR / "bev_log.csv"

@@ -1,0 +1,11 @@
+# Schmid Depot - 84 vehicles - 180d simulation
+# Overrides schmid.yaml with scaled CO2 limit
+
+demand:
+  base_num_vehicles: 79  # Oct 2023 data has 79 vehicles
+
+emissions:
+  base_limit_kg: 712000           # 200000 * (178/50) - scaled from 50d to 178d
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv
