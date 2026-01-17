@@ -6,7 +6,7 @@
 
 ## Summary
 
-For a BEV depot, CO2 emissions are **Scope 2** (purchased electricity):
+For a BEV depot, CO2 emissions are **Scope 2** (purchased electricity). Per GHG Protocol Scope 2 Guidance (2015):
 
 ```
 CO2 (kg) = Energy consumed (kWh) × Grid emission factor (kg/kWh)
@@ -50,6 +50,8 @@ The Absolute Contraction Approach (ACA) applies a **fixed annual reduction rate*
 > "The method uses a grandfathering allocation principle which implies that the larger a company's emissions in a historic reference year, the larger its share of emissions in a desired target year."
 >
 > — SBTi (2025). Corporate Net-Zero Standard V2.0 - Target-Setting Methods Documentation, p. 25
+
+**What grandfathering means in practice:** Your future emissions budget is based on how much you emitted historically. If Company A emitted 1,000 tons in 2020 and Company B emitted 100 tons, then under a 50% reduction target, Company A gets 500 tons allowance while Company B only gets 50 tons. Both reduce by the same *percentage*, but the historically high emitter keeps a proportionally larger absolute budget. This is the simplest allocation method — everyone reduces at the same rate from their own baseline.
 
 **Key characteristics:**
 - Cross-sector method (applies to all industries)
@@ -97,6 +99,11 @@ E(t) = E(base) × [1 - LARR × (t - base_year)]
 
 **Source for ambition level requirement:**
 
+**Understanding Emission Scopes:**
+- **Scope 1**: Direct emissions from sources you own/control (e.g., burning fuel on-site)
+- **Scope 2**: Indirect emissions from purchased energy (electricity you buy from the grid) — **this is the depot's primary emission source**
+- **Scope 3**: All other indirect emissions in your value chain (suppliers, employee commutes, etc.)
+
 > "C15 – Level of ambition for scope 1 and 2 targets: At a minimum, scope 1 and scope 2 near-term targets shall be consistent with the level of decarbonization required to keep global temperature increase to 1.5°C compared to pre-industrial temperatures."
 >
 > — SBTi (2025). SBTi Corporate Near-Term Criteria V5.3, p. 12
@@ -104,6 +111,8 @@ E(t) = E(base) × [1 - LARR × (t - base_year)]
 > "C18 – Level of ambition for scope 3 emissions reductions targets: At a minimum, near-term scope 3 targets (covering total required scope 3 emissions or individual scope 3 categories) shall be aligned with methods consistent with the level of decarbonization required to keep global temperature increase well-below 2°C compared to pre-industrial temperatures."
 >
 > — SBTi (2025). SBTi Corporate Near-Term Criteria V5.3, p. 12
+
+**Note:** C15/C18 are criteria IDs, not ambition levels. The key difference: Scope 1+2 (direct operations) must meet the stricter 1.5°C target, while Scope 3 (value chain) only needs well-below 2°C — because companies have less control over their supply chain emissions.
 
 ### Application to STRIDE Scenarios
 
@@ -148,29 +157,6 @@ Baseline = 84 vehicles × 50 days × 100 kWh/day × 0.35 kg/kWh
 - Different utilization pattern
 - Requires separate baseline calculation
 - Estimated: ~40,000 kg baseline → ~50,000 kg base_limit
-
----
-
-## Comparison: ACA vs Linear Interpolation
-
-| Aspect | ACA (SBTi) | Linear Interpolation |
-|--------|------------|---------------------|
-| **Formula** | Linear decay (LARR × years) | Linear decrease to fixed endpoint |
-| **Scientific basis** | 1.5°C / 2°C carbon budget scenarios | EU policy milestones |
-| **Reduction profile** | Constant annual rate | Constant absolute reduction |
-| **Widely accepted** | Yes (standard for corporate targets) | Less common in literature |
-| **For thesis** | ✅ Recommended | ⚠️ Acceptable but less rigorous |
-
-### Why ACA for STRIDE
-
-> "1.5˚C scenarios are highly pathway dependent and linearization over a longer timespan can result in cumulative emissions more than 30% higher than prescribed. Thus, linear reduction rates are calculated based on the timespan 2020-2035, which aligns with the lifetime of a science-based target that is assessed by the SBTi and minimizes distortion."
->
-> — SBTi (2019). Foundations of Science-based Target Setting, p. 21
-
-1. **Scientific credibility**: SBTi is the leading framework for corporate climate targets
-2. **Simplicity**: Single rate (LARR) applies uniformly
-3. **Comparability**: Results can be compared to other SBTi-aligned studies
-4. **Defensibility**: Well-documented methodology derived from IPCC scenarios
 
 ---
 
