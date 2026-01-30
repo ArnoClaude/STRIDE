@@ -11,7 +11,44 @@ source venv/bin/activate
 
 ## Config Chaining System
 
-Configs are now chained in order: `base.yaml` → `depot` → `scenario/sensitivity`
+### How It Works
+
+Configs are merged **left-to-right** using the `-c` flag. Each subsequent YAML file **overrides** values from previous ones:
+
+```bash
+python3 -m multi_stage.main -c config1.yaml config2.yaml config3.yaml ...
+```
+
+**Merge order**: `config1` ← `config2` ← `config3` (rightmost wins for any duplicate keys)
+
+For example, if:
+- `base.yaml` has `wacc: 0.035`
+- `sensitivity/wacc_high.yaml` has `wacc: 0.053`
+
+The final merged config will have `wacc: 0.053` (rightmost value wins).
+
+### Typical Config Layers
+
+| Layer | Purpose | Example |
+|-------|---------|---------|
+| 1. `base.yaml` | Complete shared defaults (source of truth) | WACC, tech costs, pathway |
+| 2. `depots/*.yaml` | Depot-specific overrides | Fleet size, CO2 baseline, paths |
+| 3. `scenarios/*.yaml` | Scenario storylines | Grid trajectory, pathway type |
+| 4. `sensitivity/*.yaml` | Single-parameter variations | One value only |
+
+### Combining Scenarios and Sensitivities
+
+You can combine a scenario with a sensitivity:
+
+```bash
+# Optimistic scenario + high WACC sensitivity
+python3 -m multi_stage.main \
+    -c configs/base.yaml configs/depots/schmid.yaml configs/scenarios/optimistic.yaml configs/sensitivity/wacc_high.yaml \
+    -s inputs/schmid/scenarios/base.csv \
+    --name schmid_optimistic_wacc_high
+```
+
+**Warning**: Don't combine conflicting configs (e.g., both optimistic and pessimistic scenarios). The rightmost one will silently override the other.
 
 ### Basic Usage
 
@@ -24,6 +61,9 @@ python3 -m multi_stage.main -c configs/base.yaml configs/depots/schmid.yaml conf
 
 # With sensitivity override
 python3 -m multi_stage.main -c configs/base.yaml configs/depots/schmid.yaml configs/sensitivity/wacc_high.yaml -s inputs/schmid/scenarios/base.csv --name schmid_wacc_high
+
+# 180-day simulation (different depot config + scenario file)
+python3 -m multi_stage.main -c configs/base.yaml configs/depots/schmid_180d.yaml -s inputs/schmid/scenarios/base_180d.csv --name schmid_base_180d
 ```
 
 ---

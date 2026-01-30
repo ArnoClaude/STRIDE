@@ -12,8 +12,8 @@ scenario,invest_max,2000000
 scenario,co2_max,None
 scenario,wacc,0.035
 scenario,currency,EUR
-scenario,latitude,48.3705
-scenario,longitude,10.8978
+scenario,latitude,48.97686
+scenario,longitude,12.15524
 scenario,cost_eps,1.00E-8
 scenario,filename_mapper,mapper_timeframe
 scenario,blocks,"{'dem': 'FixedDemand', 'grid': 'GridConnection', 'pv': 'PVSource', 'ess': 'StationaryEnergyStorage', 'bev': 'VehicleCommoditySystem'}"
@@ -33,10 +33,10 @@ core,ccr,1
 core,eff_dcac,0.95
 core,eff_acdc,0.95
 dem,load_profile,timeseries/dem_timeseries_test
-dem,consumption_yrl,285971648
+dem,consumption_yrl,118633268
 dem,system,ac
 dem,crev_spec,0
-pv,size_existing,0
+pv,size_existing,233190
 pv,capex_existing,False
 pv,size_max,None
 pv,invest,True
@@ -44,7 +44,7 @@ pv,data_source,PVGIS API
 pv,filename,timeseries/pvgis_api_params
 pv,system,dc
 pv,capex_spec,1.0
-pv,mntex_spec,0.01509
+pv,mntex_spec,0.0215
 pv,opex_spec,0
 pv,ls,30
 pv,ccr,1
