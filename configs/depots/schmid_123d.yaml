@@ -1,0 +1,11 @@
+# Schmid Depot - 81 vehicles - 123d simulation (Oct-Jan real data)
+# Uses new BEV log data with full fleet
+
+demand:
+  base_num_vehicles: 81  # Full fleet from Oct 2023 - Jan 2024 data
+
+emissions:
+  base_limit_kg: 492000           # 200000 * (123/50) - scaled from 50d to 123d
+
+revoletion:
+  settings_path: inputs/schmid/settings.csv
