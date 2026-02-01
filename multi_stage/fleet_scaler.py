@@ -114,8 +114,7 @@ def scale_bev_log(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_path, index=False)
     
-    print(f"    • Scaled bev_log: {base_vehicles} → {target_vehicles} vehicles")
-    print(f"    • Cloned vehicles: {vehicles_to_clone[:5]}{'...' if len(vehicles_to_clone) > 5 else ''}")
+    print(f"    Scaled bev_log: {base_vehicles} → {target_vehicles} vehicles")
     
     return output_path
 

@@ -155,10 +155,6 @@ class SequentialStageOptimizer:
         """
         print(f"\n{'='*80}")
         print(f"STRIDE Sequential Multi-Stage Optimization")
-        print(f"{'='*80}")
-        print(f"Stages: {self.config.stages}")
-        print(f"Discount rate (WACC): {self.config.wacc:.1%}")
-        print(f"Output directory: {self.output_dir}")
         print(f"{'='*80}\n")
 
         # Run each stage sequentially
@@ -187,16 +183,15 @@ class SequentialStageOptimizer:
                 )
 
                 # 4. Store results for next stage (explicit - no fragile detection)
+                stage_result['fleet_size'] = self.config.calculate_fleet_size(year)
                 self.stage_results[year] = stage_result
 
                 # 5. Print summary
                 self._print_stage_summary(year, stage_result)
-                
-                # 6. Print trajectory across all completed stages
-                self._print_trajectory_summary()
 
-                # 7. Stop if infeasible (can't continue to next stage)
+                # 6. Stop if infeasible (can't continue to next stage)
                 if stage_result.get('status') == 'infeasible':
+                    self._print_trajectory_summary()
                     self._print_infeasibility_diagnostic(year)
                     return {
                         'error': 'infeasible_stage',
@@ -220,7 +215,8 @@ class SequentialStageOptimizer:
         # Save final results
         self._save_results(aggregated)
 
-        # Print final summary
+        # Print trajectory and final summary
+        self._print_trajectory_summary()
         self._print_final_summary(aggregated)
 
         return aggregated
@@ -240,7 +236,7 @@ class SequentialStageOptimizer:
         --------
         Path : Generated scenario file path
         """
-        print(f"\n1. Generating scenario for year {year}")
+        print(f"\nScenario setup:")
 
         # Get previous stage results (if not first stage)
         previous_results = None
@@ -274,7 +270,7 @@ class SequentialStageOptimizer:
         --------
         Path : Results directory (explicit - no guessing!)
         """
-        print(f"\n2. Running REVOL-E-TION optimization")
+        print(f"\nRunning REVOL-E-TION...", end=" ", flush=True)
 
         # Build command - use our run-specific settings.csv
         cmd = [
@@ -286,10 +282,6 @@ class SequentialStageOptimizer:
 
         # Working directory should be repo root for revoletion imports to work
         working_dir = Path(__file__).parent.parent
-
-        print(f"  - Command: python -m revoletion.main ...")
-        print(f"  - Settings: {self.run_settings_path.name}")
-        print(f"  - Scenario: {scenario_path.name}")
 
         # Run optimization
         # Timeout: 60 minutes per stage (scaled fleets with 100+ vehicles take longer)
@@ -314,37 +306,32 @@ class SequentialStageOptimizer:
                 if "DEBUG" in line or (line.strip().startswith('-') and 'CO2' in line):
                     print(f"    {line}")
 
-        print(f"  ✓ REVOL-E-TION completed successfully")
+        print(f"✓")
 
         # Find results directory - now contained in our revoletion/ folder
         result_dir = self.results_parser.get_latest_result_dir(
             self.revoletion_output_dir
         )
 
-        print(f"  ✓ Results: revoletion/{result_dir.name}")
-
         return result_dir
 
     def _print_stage_summary(self, year: int, results: Dict):
-        """Print summary of stage results (generic - shows ALL investable blocks)."""
-        print(f"\n3. Stage {year} Results:")
+        """Print compact summary of stage results."""
+        print(f"\nResults:")
 
         # Handle infeasible scenarios
         if results.get('status') == 'infeasible':
-            print(f"  ├─ Status: ❌ INFEASIBLE")
-            print(f"  └─ ⚠️  No solution found - constraints too tight!")
+            print(f"  ❌ INFEASIBLE - no solution found!")
             return
 
-        print(f"  ├─ Status: ✓ {results.get('status', 'unknown')}")
+        # Financials on one line
+        npv_disc = results.get('npv_discounted') or 0
+        capex = results.get('capex_prj') or 0
+        opex = results.get('opex_prj') or 0
+        print(f"  NPV (disc.): €{npv_disc:,.0f}  |  CAPEX: €{capex:,.0f}  |  OPEX: €{opex:,.0f}")
 
-        print(f"  ├─ NPV: ${results.get('npv') or 0:,.0f}")
-        print(f"  ├─ NPV (discounted): ${results.get('npv_discounted') or 0:,.0f}")
-        print(f"  ├─ CAPEX: ${results.get('capex_prj') or 0:,.0f}")
-        print(f"  ├─ OPEX: ${results.get('opex_prj') or 0:,.0f}")
-
-        # Generic investment display - loop over ALL investable blocks from config
-        print(f"  ├─ Investments:")
-
+        # Investments - compact single line per tech with new capacity shown
+        invest_parts = []
         for block_cfg in self.config.investable_blocks:
             total = results.get(f'{block_cfg.name}_size_total', 0) or 0
             new = results.get(f'{block_cfg.name}_size_invest', 0) or 0
@@ -352,22 +339,29 @@ class SequentialStageOptimizer:
             if total > 0:
                 unit = get_unit(block_cfg.name)
                 if unit in ['kW', 'kWh', 'kWp']:
-                    print(f"  │  ├─ {block_cfg.name}: {total/1000:.1f} {unit} total")
-                    if new > 0:
-                        print(f"  │  │  └─ New: {new/1000:.1f} {unit}")
+                    new_str = f" (+{new/1000:.1f})" if new > 0 else ""
+                    invest_parts.append(f"{block_cfg.name.upper()} {total/1000:.1f} {unit}{new_str}")
                 elif unit == 'vehicles':
-                    print(f"  │  ├─ {block_cfg.name}: {int(total):,} {unit} total")
-                    if new > 0:
-                        print(f"  │  │  └─ New: {int(new):,} {unit}")
+                    new_str = f" (+{int(new)})" if new > 0 else ""
+                    invest_parts.append(f"{block_cfg.name} {int(total):,} {unit}{new_str}")
                 else:
-                    print(f"  │  ├─ {block_cfg.name}: {total:.0f} {unit} total")
-                    if new > 0:
-                        print(f"  │  │  └─ New: {new:.0f} {unit}")
+                    new_str = f" (+{new:.0f})" if new > 0 else ""
+                    invest_parts.append(f"{block_cfg.name} {total:.0f} {unit}{new_str}")
 
-        # Special display for grid g2s (if not already shown by investable_blocks loop)
+        # Add grid g2s if not in investable blocks
         grid_g2s = results.get('grid_size_g2s', 0) or 0
+        grid_new = results.get('grid_size_invest', 0) or 0
         if grid_g2s > 0 and 'grid' not in [b.name for b in self.config.investable_blocks]:
-            print(f"  │  └─ Grid g2s: {grid_g2s/1000:.1f} kW")
+            new_str = f" (+{grid_new/1000:.1f})" if grid_new > 0 else ""
+            invest_parts.append(f"Grid {grid_g2s/1000:.1f} kW{new_str}")
+
+        if invest_parts:
+            print(f"  {' | '.join(invest_parts)}")
+
+        # CO2
+        co2 = results.get('co2_sim_kg') or 0
+        if co2 > 0:
+            print(f"  CO2: {co2:,.0f} kg")
 
         # Check for binding constraints
         self._print_binding_constraints(year, results)
@@ -405,10 +399,7 @@ class SequentialStageOptimizer:
         
         # Print binding constraints
         if binding:
-            print(f"  ├─ Binding constraints:")
-            for i, constraint in enumerate(binding):
-                prefix = "└─" if i == len(binding) - 1 else "├─"
-                print(f"  │  {prefix} ⚠️  {constraint}")
+            print(f"  ⚠️  Binding: {' | '.join(binding)}")
     
     def _get_stage_invest_max(self, year: int) -> float:
         """Get invest_max from the stage scenario file."""
@@ -428,101 +419,78 @@ class SequentialStageOptimizer:
                         pass
         return None
 
+    @staticmethod
+    def _fmt_compact(val, unit):
+        """Format value compactly: use k/M suffixes for large numbers."""
+        if unit == '€':
+            if abs(val) >= 1_000_000:
+                return f"{val/1_000_000:>8.2f}M"
+            elif abs(val) >= 1_000:
+                return f"{val/1_000:>8.1f}k"
+            else:
+                return f"{val:>9,.0f}"
+        elif unit in ['kW', 'kWh', 'kWp']:
+            return f"{val:>9.1f}"
+        elif unit == 'veh':
+            return f"{int(val):>9,}"
+        else:
+            return f"{val:>9,.0f}"
+
     def _print_trajectory_summary(self):
-        """
-        Print trajectory of key metrics across ALL completed stages.
-        
-        Shows absolute values and percentage changes between consecutive stages
-        for each metric that changes over time.
-        """
+        """Print compact trajectory of key metrics across all completed stages."""
         if len(self.stage_results) < 1:
-            return  # Need at least 1 stage to show anything
-        
+            return
+
         years = sorted(self.stage_results.keys())
-        
+        col_w = 10  # column width
+
         print(f"\n{'─'*80}")
         if len(years) == 1:
-            print(f"TRAJECTORY: Stage {years[0]} (baseline)")
+            print(f"TRAJECTORY: {years[0]} (baseline)")
         else:
-            print(f"TRAJECTORY: Stages {years[0]} → {years[-1]}")
+            print(f"TRAJECTORY: {years[0]} → {years[-1]}")
         print(f"{'─'*80}")
-        
-        # Define metrics to track with display formatting
-        # Format: (key, label, unit, divisor) - key can be a tuple for computed metrics
+
+        # Define metrics: (key, label, unit, divisor)
+        # key can be tuple for computed (sum) metrics
         metrics = [
+            ('fleet_size', 'Fleet (veh)', 'veh', 1),
             ('pv_size_total', 'PV (kWp)', 'kWp', 1000),
             ('ess_size_total', 'ESS (kWh)', 'kWh', 1000),
-            ('grid_size_g2s', 'Grid cap (kW)', 'kW', 1000),
-            ('npv_discounted', 'NPV (€)', '€', 1),
+            ('grid_size_g2s', 'Grid (kW)', 'kW', 1000),
+            ('npv_discounted', 'NPV disc (€)', '€', 1),
             ('capex_prj', 'CAPEX (€)', '€', 1),
             ('opex_prj', 'OPEX (€)', '€', 1),
-            (('capex_prj', 'opex_prj'), 'Total cost (€)', '€', 1),  # Computed: CAPEX + OPEX
             ('co2_sim_kg', 'CO2 (kg)', 'kg', 1),
         ]
-        
-        # Build header row
+
+        # Header
         header = f"{'Metric':<15}"
         for year in years:
-            header += f" │ {year:>10}"
+            header += f" │ {year:>{col_w}}"
         print(header)
-        print(f"{'─'*15}" + "─┼───────────" * len(years))
-        
-        # Print each metric row
+        print(f"{'─'*15}" + f"─┼{'─'*col_w}" * len(years) + "─")
+
         for key, label, unit, divisor in metrics:
-            # Handle computed metrics (tuple of keys to sum)
             if isinstance(key, tuple):
-                # Skip if no data for any component
                 if not any(any(self.stage_results[y].get(k) for k in key) for y in years):
                     continue
             else:
-                # Skip if no data for this metric
                 if not any(self.stage_results[y].get(key) for y in years):
                     continue
-            
+
             row = f"{label:<15}"
-            prev_val = None
-            
             for year in years:
-                # Handle computed metrics (tuple of keys to sum)
                 if isinstance(key, tuple):
                     val = sum((self.stage_results[year].get(k, 0) or 0) for k in key)
                 else:
                     val = self.stage_results[year].get(key, 0) or 0
                 display_val = val / divisor
-                
-                if unit == '€':
-                    cell = f"{display_val:>10,.0f}"
-                elif unit in ['kW', 'kWh', 'kWp']:
-                    cell = f"{display_val:>10.1f}"
-                else:
-                    cell = f"{display_val:>10,.0f}"
-                
+                cell = self._fmt_compact(display_val, unit)
                 row += f" │ {cell}"
-                prev_val = val
-            
+
             print(row)
-        
-        # Print percentage changes row for key capacity metrics
-        print(f"{'─'*15}" + "─┼───────────" * len(years))
-        print(f"{'Δ PV vs prev':<15}", end="")
-        
-        for i, year in enumerate(years):
-            if i == 0:
-                print(f" │ {'─':>10}", end="")
-            else:
-                prev_year = years[i-1]
-                # Use PV as representative metric for % change
-                curr_pv = self.stage_results[year].get('pv_size_total', 0) or 0
-                prev_pv = self.stage_results[prev_year].get('pv_size_total', 0) or 0
-                
-                if prev_pv > 0:
-                    pct_change = (curr_pv - prev_pv) / prev_pv * 100
-                    print(f" │ {pct_change:>+9.1f}%", end="")
-                elif curr_pv > 0:
-                    print(f" │ {'new':>10}", end="")
-                else:
-                    print(f" │ {'─':>10}", end="")
-        print()
+
         print(f"{'─'*80}\n")
 
     def _print_infeasibility_diagnostic(self, year: int):
@@ -540,7 +508,8 @@ class SequentialStageOptimizer:
         # Config-driven suggestions
         co2_limit = self.config.calculate_co2_limit(year)
         print(f"  • Increase CO2 limit (current: {co2_limit:.0f} kg)")
-        print(f"  • Reduce fleet growth rate (current: {self.config.demand_annual_growth_rate*100:.0f}%/yr)")
+        fleet = self.config.calculate_fleet_size(year)
+        print(f"  • Reduce fleet growth (current: {fleet} vehicles at {year})")
         print(f"  • Relax technology cost constraints")
         print(f"  • Check scenario constraints in template CSV")
 
@@ -549,19 +518,17 @@ class SequentialStageOptimizer:
 
     def _print_final_summary(self, aggregated: Dict):
         """Print final multi-stage summary."""
-        print(f"\n{'='*80}")
+        print(f"{'='*80}")
         print(f"MULTI-STAGE OPTIMIZATION COMPLETE")
         print(f"{'='*80}")
-        print(f"Total NPV (discounted): ${aggregated['total_npv']:,.0f}")
-        print(f"Total CAPEX: ${aggregated['total_capex']:,.0f}")
-        print(f"\nInvestment Timeline:")
+        print(f"Total NPV (discounted): €{aggregated['total_npv']:,.0f}")
+        print(f"Total CAPEX: €{aggregated['total_capex']:,.0f}")
 
-        timeline = aggregated['investment_timeline']
-        for _, row in timeline.iterrows():
-            print(f"  {int(row['year'])}: "
-                  f"PV {row['pv_new_kw']:.0f} kW, "
-                  f"ESS {row['ess_new_kwh']:.0f} kWh, "
-                  f"CAPEX ${row['capex']:,.0f}")
+        # Fleet trajectory
+        years = sorted(self.stage_results.keys())
+        base_fleet = self.config.calculate_fleet_size(years[0])
+        final_fleet = self.config.calculate_fleet_size(years[-1])
+        print(f"Fleet: {base_fleet} → {final_fleet} vehicles ({years[0]}→{years[-1]})")
 
         print(f"{'='*80}\n")
 

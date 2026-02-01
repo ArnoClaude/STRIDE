@@ -99,20 +99,10 @@ class ScenarioBuilder:
         columns_to_drop = [col for col in data_columns if col != scenario_column]
         scenario_df = scenario_df.drop(columns=columns_to_drop)
 
-        print(f"  - Using scenario column: '{scenario_column}'")
-
-        # Print current CO2 constraint if present
-        co2_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'co2_max')
-        if co2_mask.any():
-            co2_value = scenario_df.loc[co2_mask, scenario_column].values[0]
-            if pd.notna(co2_value) and co2_value != '' and co2_value != 'None':
-                print(f"  - CO2 limit: {co2_value} kg")
-
         # Update project duration for this stage
         prj_mask = (scenario_df['block'] == 'scenario') & (scenario_df['key'] == 'prj_duration')
         if prj_mask.any():
             scenario_df.loc[prj_mask, scenario_column] = self.config.stage_duration_years
-            print(f"  - Stage duration: {self.config.stage_duration_years} years")
 
         # 1. Apply stage-linking constraints (if not first stage)
         if previous_stage_results is not None:
@@ -144,7 +134,7 @@ class ScenarioBuilder:
 
         # Save to output path
         scenario_df.to_csv(output_path, index=False)
-        print(f"  ✓ Created scenario file: {output_path.name}")
+        print(f"  ✓ Scenario: {output_path.name}")
 
         return output_path
 
@@ -172,7 +162,7 @@ class ScenarioBuilder:
         --------
         DataFrame : Updated scenario
         """
-        print("  - Inheriting capacities from previous stage:")
+        inherited_parts = []
 
         for block_cfg in self.config.investable_blocks:
             # Key in results dict (e.g., 'pv_size_total', 'ess_size_total')
@@ -186,14 +176,14 @@ class ScenarioBuilder:
                 if mask.any():
                     df.loc[mask, column] = size
 
-                    # Generic pretty printing using unit helper
-                    unit = get_unit(block_cfg.name)
-                    if unit in ['kW', 'kWh']:
-                        print(f"    • {block_cfg.name}: {size/1000:.1f} {unit} inherited")
-                    elif unit == 'vehicles':
-                        print(f"    • {block_cfg.name}: {int(size):,} {unit} inherited")
-                    else:
-                        print(f"    • {block_cfg.name}: {size:.0f} {unit} inherited")
+                    if size > 0:
+                        unit = get_unit(block_cfg.name)
+                        if unit in ['kW', 'kWh', 'kWp']:
+                            inherited_parts.append(f"{block_cfg.name.upper()} {size/1000:.1f} {unit}")
+                        elif unit == 'vehicles':
+                            inherited_parts.append(f"{block_cfg.name} {int(size):,} {unit}")
+                        else:
+                            inherited_parts.append(f"{block_cfg.name} {size:.0f} {unit}")
 
         # Special handling for grid g2s/s2g (bidirectional connections)
         if 'grid_size_g2s' in prev_results and prev_results['grid_size_g2s'] is not None:
@@ -201,14 +191,21 @@ class ScenarioBuilder:
             mask = (df['block'] == 'grid') & (df['key'] == 'size_g2s_existing')
             if mask.any():
                 df.loc[mask, column] = grid_g2s
-                print(f"    • grid (g2s): {grid_g2s/1000:.1f} kW inherited")
 
         if 'grid_size_s2g' in prev_results and prev_results['grid_size_s2g'] is not None:
             grid_s2g = prev_results['grid_size_s2g']
             mask = (df['block'] == 'grid') & (df['key'] == 'size_s2g_existing')
             if mask.any():
                 df.loc[mask, column] = grid_s2g
-                print(f"    • grid (s2g): {grid_s2g/1000:.1f} kW inherited")
+
+        # Add grid to inherited display (use g2s as representative)
+        if 'grid_size_g2s' in prev_results and prev_results['grid_size_g2s']:
+            grid_kw = prev_results['grid_size_g2s'] / 1000
+            if grid_kw > 0:
+                inherited_parts.append(f"Grid {grid_kw:.1f} kW")
+
+        if inherited_parts:
+            print(f"  Inherited: {', '.join(inherited_parts)}")
 
         return df
 
@@ -259,15 +256,13 @@ class ScenarioBuilder:
 
                         # Only print if cost actually changed
                         if abs(old_cost - new_cost) > 0.001:
-                            decline_pct = -cost_config.annual_decline_rate * 100
+                            total_pct = (new_cost - old_cost) / old_cost * 100
                             if 'pv' in tech_name:
-                                print(f"  - {tech_name.upper()} cost: ${old_cost:.2f}/W → "
-                                     f"${new_cost:.2f}/W ({decline_pct:.0f}%/yr)")
+                                print(f"  {tech_name.upper()}: ${old_cost:.2f} → ${new_cost:.2f}/Wp ({total_pct:+.0f}%)")
                             elif 'ess' in tech_name:
-                                print(f"  - {tech_name.upper()} cost: ${old_cost:.3f}/Wh → "
-                                     f"${new_cost:.3f}/Wh ({decline_pct:.0f}%/yr)")
+                                print(f"  {tech_name.upper()}: ${old_cost:.3f} → ${new_cost:.3f}/Wh ({total_pct:+.0f}%)")
                             else:
-                                print(f"  - {tech_name} cost: {old_cost:.3f} → {new_cost:.3f}")
+                                print(f"  {tech_name}: {old_cost:.3f} → {new_cost:.3f} ({total_pct:+.0f}%)")
 
         return df
 
@@ -314,9 +309,8 @@ class ScenarioBuilder:
                             df.loc[mask, column] = new_val
 
                             if 'bev' in block_cfg.name:
-                                print(f"  - Fleet size: {base_val} vehicles → "
-                                     f"{new_val} vehicles "
-                                     f"(+{self.config.demand_annual_growth_rate*100:.0f}%/yr)")
+                                growth_pct = (new_val - base_val) / base_val * 100
+                                print(f"  Fleet: {base_val} → {new_val} vehicles (+{growth_pct:.0f}%)")
 
                                 # Scale bev_log if enabled
                                 if self.config.demand_scale_bev_log and new_val > base_val:
@@ -333,8 +327,8 @@ class ScenarioBuilder:
                             base_val = float(base_val)
                             new_val = base_val * growth_factor
                             df.loc[mask, column] = new_val
-                            print(f"  - Annual consumption: {base_val/1e6:.2f} MWh → "
-                                 f"{new_val/1e6:.2f} MWh")
+                            cons_pct = (new_val - base_val) / base_val * 100
+                            print(f"  Consumption: {base_val/1e6:.1f} → {new_val/1e6:.1f} MWh (+{cons_pct:.0f}%)")
 
         return df
 
@@ -390,7 +384,6 @@ class ScenarioBuilder:
         output_path = self.config.stage_scenarios_dir / f"{new_filename}.csv"
 
         # Scale the bev_log
-        print(f"  - Scaling bev_log for fleet growth:")
         scale_bev_log(
             base_log_path=base_log_path,
             output_path=output_path,
@@ -454,11 +447,10 @@ class ScenarioBuilder:
 
             if pd.notna(co2_limit_old) and co2_limit_old != '' and co2_limit_old != 'None':
                 co2_limit_old = float(co2_limit_old)
-                print(f"  - CO2 limit: {co2_limit_old:.0f} kg → {co2_limit_new:.0f} kg "
-                     f"(decarbonization pathway)")
+                pct = (co2_limit_new - co2_limit_old) / co2_limit_old * 100 if co2_limit_old > 0 else 0
+                print(f"  CO2 limit: {co2_limit_old/1000:.0f} → {co2_limit_new/1000:.0f} t ({pct:+.0f}%)")
             else:
-                print(f"  - CO2 limit: None → {co2_limit_new:.0f} kg "
-                     f"(decarbonization pathway enabled)")
+                print(f"  CO2 limit: {co2_limit_new/1000:.0f} t (pathway enabled)")
 
         return df
 
@@ -546,11 +538,9 @@ class ScenarioBuilder:
 
             if pd.notna(co2_factor_old) and co2_factor_old != '' and co2_factor_old != 'None':
                 co2_factor_old = float(co2_factor_old)
-                print(f"  - Grid CO2 factor: {co2_factor_old:.3f} → {co2_factor_new:.3f} kg/kWh "
-                     f"({trajectory_source})")
+                print(f"  Grid CO2: {co2_factor_old:.3f} → {co2_factor_new:.3f} kg/kWh ({trajectory_source})")
             else:
-                print(f"  - Grid CO2 factor: None → {co2_factor_new:.3f} kg/kWh "
-                     f"({trajectory_source})")
+                print(f"  Grid CO2: {co2_factor_new:.3f} kg/kWh ({trajectory_source})")
 
         return df
 
@@ -606,10 +596,9 @@ class ScenarioBuilder:
             # Only override if the value is NaN/None (not explicitly set)
             if pd.isna(old_val):
                 df.loc[invest_mask, column] = invest_max
-                print(f"  - invest_max: {old_val} → ${invest_max:,.0f} "
-                      f"(based on {fleet_size} vehicles × {stage_years} years)")
+                print(f"  invest_max: ${invest_max:,.0f} (auto)")
             else:
-                print(f"  - invest_max: ${float(old_val):,.0f} (explicitly set, not overriding)")
+                print(f"  invest_max: ${float(old_val):,.0f} (fixed)")
         else:
             # If invest_max row doesn't exist, we should add it
             # But for now, just warn - the template should include it
